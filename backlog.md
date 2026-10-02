@@ -12,13 +12,15 @@
 
 ### **Day 1 — Project Setup & Skeleton**
 
-- [ ] Inisialisasi monorepo (Turborepo: `apps/web`, `apps/api`, `packages/shared`).
-- [ ] Setup Next.js 14 + TypeScript + Tailwind + shadcn/ui.
-- [ ] Setup NestJS/Fiber + PostgreSQL + Prisma.
-- [ ] Docker Compose: PostgreSQL, Redis, Adminer.
-- [ ] Setup GitHub Actions: lint, test, build.
-- [ ] Buat `.env.example` + dokumentasi setup lokal.
+- [x] Inisialisasi monorepo (Turborepo: `apps/web`, `apps/api`, `packages/shared`).
+- [x] Setup Next.js 14 + TypeScript + Tailwind + shadcn/ui.
+- [x] Setup NestJS/Fiber + PostgreSQL + Prisma.
+- [x] Docker Compose: PostgreSQL, Redis, Adminer.
+- [x] Setup GitHub Actions: lint, test, build.
+- [x] Buat `.env.example` + dokumentasi setup lokal.
 - [ ] **Deliverable:** `docker compose up` → app jalan di `localhost:3000` & `:4000`.
+
+> Catatan: konfigurasi Compose valid dan CLI Docker tersedia. Runtime belum diverifikasi karena akses ke Docker daemon ditolak (`permission denied` pada `/var/run/docker.sock`).
 
 ### **Day 2 — Auth Multi-Tenant (Part 1)**
 
