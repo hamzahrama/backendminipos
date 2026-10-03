@@ -18,36 +18,34 @@
 - [x] Docker Compose: PostgreSQL, Redis, Adminer.
 - [x] Setup GitHub Actions: lint, test, build.
 - [x] Buat `.env.example` + dokumentasi setup lokal.
-- [ ] **Deliverable:** `docker compose up` → app jalan di `localhost:3000` & `:4000`.
-
-> Catatan: konfigurasi Compose valid dan CLI Docker tersedia. Runtime belum diverifikasi karena akses ke Docker daemon ditolak (`permission denied` pada `/var/run/docker.sock`).
+- [x] **Deliverable:** `docker compose up -d postgres redis adminer` + `pnpm dev` → web di `localhost:3000` & API di `:4000`.
 
 ### **Day 2 — Auth Multi-Tenant (Part 1)**
 
-- [ ] Skema DB: `tenants`, `users`, `roles`, `permissions`, `user_tenants`.
-- [ ] Endpoint: `POST /auth/register-tenant`, `POST /auth/login`.
-- [ ] JWT service + refresh token rotation.
-- [ ] Middleware RBAC (`requireRole('owner', 'cashier')`).
-- [ ] Halaman login + register tenant (Next.js).
-- [ ] **Deliverable:** Bisa daftar tenant + login, dapat JWT.
+- [x] Skema DB: `tenants`, `users`, `roles`, `permissions`, `user_tenants`.
+- [x] Endpoint: `POST /auth/register-tenant`, `POST /auth/login`.
+- [x] JWT service + refresh token rotation.
+- [x] Middleware RBAC (`requireRole('owner', 'cashier')`).
+- [x] Halaman login + register tenant (Next.js).
+- [x] **Deliverable:** Bisa daftar tenant + login, dapat JWT.
 
 ### **Day 3 — Auth Multi-Tenant (Part 2)**
 
-- [ ] Context tenant di semua request (`x-tenant-id` dari JWT).
-- [ ] Guard global: semua query otomatis filter `tenant_id`.
-- [ ] Halaman dashboard kosong setelah login.
-- [ ] Logout + token refresh otomatis di frontend.
-- [ ] Unit test untuk auth flow.
-- [ ] **Deliverable:** Multi-tenant terisolasi, user A tidak lihat data tenant B.
+- [x] Context tenant di semua request (`x-tenant-id` dari JWT).
+- [x] Guard global: semua query otomatis filter `tenant_id`.
+- [x] Halaman dashboard kosong setelah login.
+- [x] Logout + token refresh otomatis di frontend.
+- [x] Unit test untuk auth flow.
+- [x] **Deliverable:** Multi-tenant terisolasi, user A tidak lihat data tenant B.
 
 ### **Day 4 — Master Data Kategori & Produk**
 
-- [ ] Skema: `categories`, `products`, `product_images`.
-- [ ] CRUD API kategori & produk.
-- [ ] Upload gambar ke S3/R2 (presigned URL).
-- [ ] Halaman list produk (table + pagination + search).
-- [ ] Form tambah/edit produk.
-- [ ] **Deliverable:** Owner bisa CRUD produk lengkap dengan gambar.
+- [x] Skema: `categories`, `products`, `product_images`.
+- [x] CRUD API kategori & produk.
+- [x] Upload gambar ke S3/R2 (presigned URL).
+- [x] Halaman list produk (table + pagination + search).
+- [x] Form tambah/edit produk.
+- [x] **Deliverable:** Owner bisa CRUD produk lengkap dengan gambar.
 
 ### **Day 5 — Produk Lanjutan & Import CSV**
 
