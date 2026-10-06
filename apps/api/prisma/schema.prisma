@@ -19,6 +19,11 @@ model Tenant {
   categories    Category[]
   products      Product[]
   productImages ProductImage[]
+  productPriceHistory ProductPriceHistory[]
+  warehouses    Warehouse[]
+  productBatches ProductBatch[]
+  stockMovements StockMovement[]
+  inventoryAlerts InventoryAlert[]
 
   @@map("tenants")
 }
@@ -127,16 +132,123 @@ model Product {
   retailPrice Decimal        @db.Decimal(14, 2) @map("retail_price")
   pv          Decimal        @default(0) @db.Decimal(10, 2)
   isActive    Boolean        @default(true) @map("is_active")
+  lowStockLimit Int          @default(5) @map("low_stock_limit")
+  deletedAt   DateTime?      @map("deleted_at")
   createdAt   DateTime       @default(now()) @map("created_at")
   updatedAt   DateTime       @updatedAt @map("updated_at")
   tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   category    Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   images      ProductImage[]
+  priceHistory ProductPriceHistory[]
+  batches     ProductBatch[]
+  stockMovements StockMovement[]
+  inventoryAlerts InventoryAlert[]
 
   @@unique([tenantId, sku])
   @@index([tenantId, name])
   @@index([tenantId, categoryId])
   @@map("products")
+}
+
+model Warehouse {
+  id        String          @id @default(cuid())
+  tenantId  String          @map("tenant_id")
+  name      String
+  code      String
+  isDefault Boolean         @default(false) @map("is_default")
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+  tenant    Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  batches   ProductBatch[]
+  movements StockMovement[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId, isDefault])
+  @@map("warehouses")
+}
+
+model ProductBatch {
+  id                String          @id @default(cuid())
+  tenantId          String          @map("tenant_id")
+  productId         String          @map("product_id")
+  warehouseId       String          @map("warehouse_id")
+  batchCode         String          @map("batch_code")
+  expiryDate        DateTime?       @map("expiry_date") @db.Date
+  receivedQuantity  Decimal         @db.Decimal(14, 2) @map("received_quantity")
+  quantity          Decimal         @db.Decimal(14, 2)
+  unitCost          Decimal?        @db.Decimal(14, 2) @map("unit_cost")
+  receivedAt        DateTime        @default(now()) @map("received_at")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  tenant            Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product           Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouse         Warehouse       @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  movements         StockMovement[]
+  alerts            InventoryAlert[]
+
+  @@unique([tenantId, productId, warehouseId, batchCode])
+  @@index([tenantId, productId, expiryDate, receivedAt])
+  @@map("product_batches")
+}
+
+model StockMovement {
+  id          String       @id @default(cuid())
+  tenantId    String       @map("tenant_id")
+  productId   String       @map("product_id")
+  batchId     String       @map("batch_id")
+  warehouseId String       @map("warehouse_id")
+  type        String
+  quantity    Decimal      @db.Decimal(14, 2)
+  reference   String?
+  note        String?
+  createdBy   String?      @map("created_by")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product     Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  batch       ProductBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  warehouse   Warehouse    @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, productId, createdAt])
+  @@index([tenantId, batchId, createdAt])
+  @@map("stock_movements")
+}
+
+model InventoryAlert {
+  id          String       @id @default(cuid())
+  tenantId    String       @map("tenant_id")
+  fingerprint String
+  kind        String
+  productId   String       @map("product_id")
+  batchId     String?      @map("batch_id")
+  message     String
+  quantity    Decimal?     @db.Decimal(14, 2)
+  expiresAt   DateTime?    @map("expires_at") @db.Date
+  observedAt  DateTime     @default(now()) @map("observed_at")
+  resolvedAt  DateTime?    @map("resolved_at")
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product     Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  batch       ProductBatch? @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, fingerprint])
+  @@index([tenantId, resolvedAt, kind])
+  @@map("inventory_alerts")
+}
+
+model ProductPriceHistory {
+  id                  String   @id @default(cuid())
+  tenantId            String   @map("tenant_id")
+  productId           String   @map("product_id")
+  previousMemberPrice Decimal  @db.Decimal(14, 2) @map("previous_member_price")
+  previousRetailPrice Decimal  @db.Decimal(14, 2) @map("previous_retail_price")
+  memberPrice         Decimal  @db.Decimal(14, 2) @map("member_price")
+  retailPrice         Decimal  @db.Decimal(14, 2) @map("retail_price")
+  source              String   @default("manual")
+  changedByUserId     String?  @map("changed_by_user_id")
+  createdAt           DateTime @default(now()) @map("created_at")
+  tenant              Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product             Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, productId, createdAt])
+  @@map("product_price_history")
 }
 
 model ProductImage {

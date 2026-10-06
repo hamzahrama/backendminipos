@@ -42,6 +42,18 @@ Request yang sudah login wajib mengirim `x-tenant-id` sesuai `tenant.id` dari re
 - Upload gambar: minta `POST /products/images/presign` dengan `fileName`, `contentType`, dan `size`; browser lalu `PUT` file ke `uploadUrl`, kemudian simpan URL/key dengan `POST /products/:id/images`.
 - Upload menerima JPEG, PNG, atau WebP hingga 10 MB. Supaya upload aktif, isi `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, dan `S3_PUBLIC_URL` di `.env`. Nilai ini cocok untuk S3-compatible storage seperti Cloudflare R2. Atur CORS bucket agar mengizinkan origin web lokal, method `PUT`, serta header `Content-Type`.
 - Gambar tersimpan memakai key tenant-specific `tenants/{tenantId}/products/...`; konfigurasi storage tidak wajib untuk mencoba CRUD teks produk.
+- Import CSV: unggah file sebagai field multipart `file` ke `POST /products/import/preview`. API menampilkan kesalahan per baris; jika semua baris valid, kirim daftar `rows` hasil preview ke `POST /products/import/commit`. Kolom wajib: `name`, `sku`, `memberPrice`, `retailPrice`; opsional: `barcode`, `description`, `category`, `pv`. Batasnya 500 produk / 1 MB per file.
+- Harga massal: `PATCH /products/bulk-prices` dengan `productIds` dan salah satu/kedua dari `memberPrice` atau `retailPrice` untuk menetapkan harga baru pada produk pilihan.
+- Produk yang dihapus dari daftar utama diarsipkan secara soft delete. Pakai `GET /products?includeDeleted=true` untuk melihat arsip dan `POST /products/:id/restore` untuk memulihkan.
+- Detail produk dan riwayat harga tersedia dari tombol **Detail** di daftar produk. Perubahan harga manual dan massal disimpan atomik; API riwayat tersedia melalui `GET /products/:id/price-history`.
+
+## Stok, batch, FEFO, dan alert
+
+- Gudang tenant: `GET /warehouses` dan `POST /warehouses` dengan `name` serta `code`.
+- Stok masuk: `POST /inventory/stock-in` dengan `productId`, `batchCode`, `quantity`; `expiryDate`, `unitCost`, dan `warehouseId` opsional. Penerimaan dicatat sebagai batch serta pergerakan stok dalam satu transaksi. Kode batch yang sama di gudang yang sama menambah kuantitas batch itu.
+- Batch per produk: `GET /products/:id/batches`; ringkasan stok semua produk: `GET /inventory/stock`.
+- FEFO: `POST /inventory/fefo/preview` dengan `productId` dan `quantity` menunjukkan batch yang akan dipakai dari tanggal kedaluwarsa terdekat. Engine `InventoryService.consumeByFefo(...)` mengurangi batch dan mencatat pergerakan keluar di transaksi pemanggil; alur checkout akan memakainya pada Day 11.
+- Ambang alert diatur lewat `lowStockLimit` pada produk (default 5). `GET /alerts` menampilkan stok di bawah ambang dan batch yang kedaluwarsa dalam 30 hari. Alert dihitung saat dibaca dan diperbarui oleh cron harian pukul 00.00 WIB; pemeriksaan awal juga berjalan saat API mulai.
 
 ## Struktur
 

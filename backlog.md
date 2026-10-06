@@ -49,27 +49,27 @@
 
 ### **Day 5 — Produk Lanjutan & Import CSV**
 
-- [ ] Bulk import CSV (upload → validasi → preview → commit).
-- [ ] Bulk update harga massal.
-- [ ] Soft delete + restore produk.
-- [ ] Halaman detail produk dengan riwayat harga.
-- [ ] **Deliverable:** Import 100 produk dari CSV dalam < 10 detik.
+- [x] Bulk import CSV (upload → validasi → preview → commit).
+- [x] Bulk update harga massal.
+- [x] Soft delete + restore produk.
+- [x] Halaman detail produk dengan riwayat harga.
+- [x] **Deliverable:** Import 100 produk dari CSV dalam < 10 detik.
 
 ### **Day 6 — Inventory Basic & Batch**
 
-- [ ] Skema: `product_batches`, `stock_movements`, `warehouses`.
-- [ ] Setiap produk bisa punya banyak batch (expiry berbeda).
-- [ ] Input stok masuk → otomatis create batch baru.
-- [ ] Halaman manajemen batch per produk.
-- [ ] **Deliverable:** Stok per produk & per batch terlihat.
+- [x] Skema: `product_batches`, `stock_movements`, `warehouses`.
+- [x] Setiap produk bisa punya banyak batch (expiry berbeda).
+- [x] Input stok masuk → otomatis create batch baru.
+- [x] Halaman manajemen batch per produk.
+- [x] **Deliverable:** Stok per produk & per batch terlihat.
 
 ### **Day 7 — FEFO Engine & Alert**
 
-- [ ] Logic FEFO: pilih batch dengan expiry terdekat saat penjualan.
-- [ ] Cron job harian: cek stok < limit & expiry < 30 hari.
-- [ ] Endpoint `GET /alerts` untuk dashboard.
-- [ ] Widget alert di dashboard (badge merah).
-- [ ] **Deliverable:** Alert otomatis muncul di dashboard.
+- [x] Logic FEFO: pilih batch dengan expiry terdekat saat penjualan.
+- [x] Cron job harian: cek stok < limit & expiry < 30 hari.
+- [x] Endpoint `GET /alerts` untuk dashboard.
+- [x] Widget alert di dashboard (badge merah).
+- [x] **Deliverable:** Alert otomatis muncul di dashboard.
 
 ---
 
