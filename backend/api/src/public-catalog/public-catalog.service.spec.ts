@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PrismaService } from "../prisma/prisma.service";
 import { PublicCatalogService } from "./public-catalog.service";
 
-const tenant = { id: "tenant-1", name: "Toko Madu", slug: "toko-madu", publicCatalogEnabled: true, whatsAppNumber: "62812" };
+const tenant = { id: "tenant-1", name: "Toko Madu", slug: "toko-madu", publicCatalogEnabled: true, whatsAppNumber: "62812", status: "ACTIVE" };
 
 function makePrisma(overrides: { tenant?: unknown; products?: unknown[]; categories?: unknown[] } = {}) {
   return {
@@ -39,7 +39,7 @@ describe("PublicCatalogService", () => {
     const prisma = makePrisma();
     await expect(makeService(prisma).listEnabledSlugs()).resolves.toEqual([{ slug: "toko-madu" }]);
     expect(prisma.tenant.findMany).toHaveBeenCalledWith({
-      where: { publicCatalogEnabled: true }, select: { slug: true, updatedAt: true }, orderBy: { name: "asc" },
+      where: { publicCatalogEnabled: true, status: "ACTIVE" }, select: { slug: true, updatedAt: true }, orderBy: { name: "asc" },
     });
   });
 
@@ -75,11 +75,14 @@ describe("PublicCatalogService", () => {
     ]);
   });
 
-  it("hides missing or disabled catalogs", async () => {
+  it("hides missing, disabled, or suspended catalogs", async () => {
     await expect(makeService(makePrisma({ tenant: null })).getCatalog("x", {})).rejects.toBeInstanceOf(NotFoundException);
     const disabled = makePrisma({ tenant: { ...tenant, publicCatalogEnabled: false } });
     await expect(makeService(disabled).getCatalog("toko-madu", {})).rejects.toBeInstanceOf(NotFoundException);
     expect(disabled.product.findMany).not.toHaveBeenCalled();
+    const suspended = makePrisma({ tenant: { ...tenant, status: "SUSPENDED" } });
+    await expect(makeService(suspended).getCatalog("toko-madu", {})).rejects.toBeInstanceOf(NotFoundException);
+    expect(suspended.product.findMany).not.toHaveBeenCalled();
   });
 
   it("returns a single product or NotFound", async () => {

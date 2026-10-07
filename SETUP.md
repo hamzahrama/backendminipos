@@ -16,11 +16,11 @@ PostgreSQL dan Redis menyimpan data dalam Docker volumes. Hentikan stack dengan 
 
 ## Jalankan aplikasi di host
 
-1. Salin `.env.example` menjadi `.env` dan `apps/api/.env` agar Prisma bisa membaca URL database saat migrasi lokal.
+1. Salin `.env.example` menjadi `.env` dan `backend/api/.env` agar Prisma bisa membaca URL database saat migrasi lokal.
 2. Jalankan `docker compose up -d postgres redis adminer`.
 3. Jalankan `pnpm install`, `pnpm db:migrate`, lalu `pnpm dev`.
 
-Perintah workspace tersedia melalui `pnpm dev`, `pnpm lint`, `pnpm test`, dan `pnpm build`. Coverage API: `pnpm --filter api test:coverage` (ambang minimum 60% untuk lines/statements/functions/branches, juga dijalankan di CI). Skema Prisma berada di `apps/api/prisma/schema.prisma`; jalankan `pnpm db:generate` setelah mengubah skema. Docker otomatis menjalankan migrasi yang tersedia saat API mulai.
+Perintah workspace tersedia melalui `pnpm dev`, `pnpm lint`, `pnpm test`, dan `pnpm build`. Coverage API: `pnpm --filter api test:coverage` (ambang minimum 60% untuk lines/statements/functions/branches, juga dijalankan di CI). Skema Prisma berada di `backend/api/prisma/schema.prisma`; jalankan `pnpm db:generate` setelah mengubah skema. Docker otomatis menjalankan migrasi yang tersedia saat API mulai.
 
 ## Autentikasi
 
@@ -78,8 +78,8 @@ Request yang sudah login wajib mengirim `x-tenant-id` sesuai `tenant.id` dari re
 
 ## Struktur
 
-- `apps/web`: Next.js 14 dengan TypeScript.
-- `apps/api`: NestJS, Prisma, dan endpoint pemeriksaan `/health`.
+- `frontend/web`: Next.js 14 dengan TypeScript.
+- `backend/api`: NestJS, Prisma, dan endpoint pemeriksaan `/health`.
 - `packages/shared`: tipe dan utilitas yang dibagikan antar aplikasi.
 
 ## Katalog publik dan deployment

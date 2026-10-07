@@ -1,6 +1,6 @@
 # Web Mini POS & Inventaris HNI
 
-Monorepo: `apps/web` (Next.js), `apps/api` (NestJS), `packages/shared`. PostgreSQL + Redis + Prisma. Docker Compose untuk dev.
+Monorepo: `frontend/web` (Next.js), `backend/api` (NestJS), `packages/shared`. PostgreSQL + Redis + Prisma. Docker Compose untuk dev.
 
 ## Quick Start
 
@@ -17,8 +17,8 @@ pnpm dev
 ## Struktur
 
 ```
-apps/web/   → Next.js (dashboard, POS, katalog, receipt)
-apps/api/   → NestJS + Prisma (auth, produk, transaksi, laporan)
+frontend/web/   → Next.js (dashboard, POS, katalog, receipt)
+backend/api/    → NestJS + Prisma (auth, produk, transaksi, laporan)
 packages/shared/ → skema & konstanta bersama
 ```
 
