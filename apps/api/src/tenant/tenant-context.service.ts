@@ -9,6 +9,11 @@ export class TenantContextService {
     return this.storage.run(tenantId, callback);
   }
 
+  /** Runs a callback without any tenant scope (platform super-admin operations only). */
+  runUnscoped<T>(callback: () => T): T {
+    return this.storage.exit(callback);
+  }
+
   getTenantId() {
     return this.storage.getStore();
   }

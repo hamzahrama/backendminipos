@@ -12,7 +12,7 @@ export class InventoryController {
   @Get("warehouses") listWarehouses() { return this.inventory.listWarehouses(); }
   @Post("warehouses") createWarehouse(@Body() body: CreateWarehouseDto) { return this.inventory.createWarehouse(body); }
 
-  @Get("inventory/stock") getStock() { return this.inventory.stockSummary(); }
+  @Get("inventory/stock") @RequireRole("owner", "cashier") getStock() { return this.inventory.stockSummary(); }
   @Post("inventory/stock-in") receiveStock(@Body() body: StockInDto, @Req() request: AuthenticatedRequest) {
     return this.inventory.receiveStock(body, request.user.sub);
   }

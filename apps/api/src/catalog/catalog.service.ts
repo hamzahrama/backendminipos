@@ -305,7 +305,7 @@ export class CatalogService {
     if (!IMAGE_TYPES.has(input.contentType)) throw new BadRequestException("Format gambar harus JPEG, PNG, atau WebP.");
     const extension = extname(input.fileName).toLowerCase();
     const safeExtension = extension && /^\.(jpe?g|png|webp)$/.test(extension) ? extension : "";
-    const key = `tenants/${this.tenantContext.getTenantId()}/products/${randomUUID()}${safeExtension}`;
+    const key = `tenants/${this.requireTenantId()}/products/${randomUUID()}${safeExtension}`;
     const command = new PutObjectCommand({ Bucket: this.bucket, Key: key, ContentType: input.contentType });
     const uploadUrl = await getSignedUrl(this.s3, command, { expiresIn: 300 });
     return { key, uploadUrl, publicUrl: `${this.publicBaseUrl}/${key}`, expiresIn: 300 };

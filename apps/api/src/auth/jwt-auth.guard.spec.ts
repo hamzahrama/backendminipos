@@ -27,7 +27,7 @@ function makeContext(headers: Record<string, string>) {
 describe("JwtAuthGuard tenant header", () => {
   it("accepts the tenant ID only when it matches the signed access token", async () => {
     const reflector = { getAllAndOverride: vi.fn().mockReturnValue(false) } as unknown as Reflector;
-    const authService = { verifyAccessToken: vi.fn().mockResolvedValue(tokenClaims) };
+    const authService = { verifyAccessToken: vi.fn().mockResolvedValue(tokenClaims), assertTenantActive: vi.fn().mockResolvedValue(undefined) };
     const guard = new JwtAuthGuard(authService as unknown as AuthService, reflector);
     const { context, request } = makeContext({
       authorization: "Bearer valid.access.token",
@@ -40,7 +40,7 @@ describe("JwtAuthGuard tenant header", () => {
 
   it("rejects a tenant header that differs from the signed access token", async () => {
     const reflector = { getAllAndOverride: vi.fn().mockReturnValue(false) } as unknown as Reflector;
-    const authService = { verifyAccessToken: vi.fn().mockResolvedValue(tokenClaims) };
+    const authService = { verifyAccessToken: vi.fn().mockResolvedValue(tokenClaims), assertTenantActive: vi.fn().mockResolvedValue(undefined) };
     const guard = new JwtAuthGuard(authService as unknown as AuthService, reflector);
     const { context } = makeContext({
       authorization: "Bearer valid.access.token",

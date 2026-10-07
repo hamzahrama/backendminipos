@@ -1,6 +1,6 @@
-import { UnauthorizedException } from "@nestjs/common";
+import { ForbiddenException, UnauthorizedException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { AuthService } from "./auth.service";
+import { AuthService, isSuperAdminEmail } from "./auth.service";
 import { hash } from "bcryptjs";
 import { createHash } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
@@ -252,5 +252,45 @@ describe("AuthService", () => {
       },
       data: { revokedAt: expect.any(Date) },
     });
+  });
+});
+
+describe("AuthService tenant status & super admin", () => {
+  const claims = { sub: "user-1", email: "owner@example.com", tenantId: "tenant-1", tenantSlug: "t", roles: ["owner"], permissions: [], tokenType: "access" as const };
+
+  it("blocks login to a suspended tenant", async () => {
+    const membership = { ...makeMembership(), tenant: { id: "tenant-1", name: "Toko", slug: "toko", status: "SUSPENDED" } };
+    membership.user.passwordHash = await hash("password-ku", 4);
+    const prisma = { userTenant: { findFirst: vi.fn().mockResolvedValue(membership) } } as unknown as PrismaService;
+    const auth = new AuthService(prisma, makeTokenPairJwt() as never);
+    await expect(auth.login({ email: "agen@example.com", password: "password-ku", tenantSlug: "toko" })).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it("adds the super_admin role for configured emails", async () => {
+    process.env.SUPER_ADMIN_EMAILS = "admin@example.com, agen@example.com";
+    try {
+      expect(isSuperAdminEmail("AGEN@example.com")).toBe(true);
+      const membership = makeMembership();
+      membership.user.passwordHash = await hash("password-ku", 4);
+      const prisma = { userTenant: { findFirst: vi.fn().mockResolvedValue(membership) }, refreshToken: { create: vi.fn() } } as unknown as PrismaService;
+      const auth = new AuthService(prisma, makeTokenPairJwt() as never);
+      const result = await auth.login({ email: "agen@example.com", password: "password-ku", tenantSlug: "toko-sehat" });
+      expect(result.user.roles).toEqual(["owner", "super_admin"]);
+    } finally { delete process.env.SUPER_ADMIN_EMAILS; }
+    expect(isSuperAdminEmail("agen@example.com")).toBe(false);
+  });
+
+  it("caches tenant status checks and rejects suspended tenants per request", async () => {
+    const findUnique = vi.fn().mockResolvedValue({ status: "ACTIVE" });
+    const auth = new AuthService({ tenant: { findUnique } } as unknown as PrismaService, makeTokenPairJwt() as never);
+    await auth.assertTenantActive(claims);
+    await auth.assertTenantActive(claims);
+    expect(findUnique).toHaveBeenCalledTimes(1);
+    findUnique.mockResolvedValueOnce({ status: "SUSPENDED" });
+    auth.invalidateTenantStatus("tenant-1");
+    await expect(auth.assertTenantActive(claims)).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(auth.assertTenantActive({ ...claims, roles: ["owner", "super_admin"] })).resolves.toBeUndefined();
+    findUnique.mockResolvedValueOnce(null);
+    await expect(auth.assertTenantActive({ ...claims, tenantId: "gone" })).rejects.toBeInstanceOf(UnauthorizedException);
   });
 });

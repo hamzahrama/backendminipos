@@ -1,0 +1,26 @@
+FROM node:20-alpine AS build
+
+RUN apk add --no-cache openssl postgresql-client && corepack enable
+WORKDIR /workspace
+ENV NEXT_TELEMETRY_DISABLED=1
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/web/package.json ./apps/web/package.json
+COPY packages/shared/package.json ./packages/shared/package.json
+RUN pnpm install --frozen-lockfile
+COPY . .
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_SITE_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
+RUN DATABASE_URL="postgresql://build:build@localhost:5432/build" pnpm --filter api db:generate
+RUN DATABASE_URL="postgresql://build:build@localhost:5432/build" pnpm build
+
+FROM node:20-alpine AS production
+
+RUN apk add --no-cache openssl postgresql-client && corepack enable
+WORKDIR /workspace
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
+COPY --from=build --chown=node:node /workspace /workspace
+USER node
+EXPOSE 3000 4000

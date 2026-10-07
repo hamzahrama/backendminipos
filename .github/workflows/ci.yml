@@ -18,6 +18,8 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm db:generate
       - run: pnpm lint
       - run: pnpm test
+      - run: pnpm --filter api test:coverage
       - run: pnpm build

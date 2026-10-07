@@ -36,6 +36,7 @@ export class JwtAuthGuard implements CanActivate {
     if (tenantHeader !== request.user.tenantId) {
       throw new ForbiddenException("Header x-tenant-id harus sesuai dengan tenant pada JWT.");
     }
+    await this.authService.assertTenantActive(request.user);
     return true;
   }
 }

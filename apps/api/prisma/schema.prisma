@@ -8,34 +8,51 @@ datasource db {
 }
 
 model Tenant {
-  id           String         @id @default(cuid())
-  name         String
-  slug         String         @unique
-  createdAt    DateTime       @default(now()) @map("created_at")
-  updatedAt    DateTime       @updatedAt @map("updated_at")
-  memberships  UserTenant[]
-  roles        Role[]
-  refreshTokens RefreshToken[]
-  categories    Category[]
-  products      Product[]
-  productImages ProductImage[]
-  productPriceHistory ProductPriceHistory[]
-  warehouses    Warehouse[]
-  productBatches ProductBatch[]
-  stockMovements StockMovement[]
-  inventoryAlerts InventoryAlert[]
+  id                   String                @id @default(cuid())
+  name                 String
+  slug                 String                @unique
+  publicCatalogEnabled Boolean               @default(false) @map("public_catalog_enabled")
+  whatsAppNumber       String?               @map("whatsapp_number")
+  dailyReportEnabled   Boolean               @default(false) @map("daily_report_enabled")
+  dailyReportHour      Int                   @default(8) @map("daily_report_hour")
+  status               String                @default("ACTIVE")
+  suspendedAt          DateTime?             @map("suspended_at")
+  suspendReason        String?               @map("suspend_reason")
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+  memberships          UserTenant[]
+  roles                Role[]
+  refreshTokens        RefreshToken[]
+  categories           Category[]
+  products             Product[]
+  productImages        ProductImage[]
+  productPriceHistory  ProductPriceHistory[]
+  warehouses           Warehouse[]
+  productBatches       ProductBatch[]
+  stockMovements       StockMovement[]
+  inventoryAlerts      InventoryAlert[]
+  customers            Customer[]
+  transactions         SaleTransaction[]
+  pvLogs               PvLog[]
+  invoiceCounters      InvoiceCounter[]
+  vouchers             Voucher[]
+  expenses             Expense[]
+  auditLogs            AuditLog[]
+  whatsAppLogs         WhatsAppLog[]
+  networkNodes         NetworkNode[]
+  bonusScheme          BonusScheme?
 
   @@map("tenants")
 }
 
 model User {
-  id           String         @id @default(cuid())
-  name         String
-  email        String         @unique
-  passwordHash String         @map("password_hash")
-  createdAt    DateTime       @default(now()) @map("created_at")
-  updatedAt    DateTime       @updatedAt @map("updated_at")
-  memberships  UserTenant[]
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  passwordHash  String         @map("password_hash")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  memberships   UserTenant[]
   refreshTokens RefreshToken[]
 
   @@map("users")
@@ -121,28 +138,30 @@ model Category {
 }
 
 model Product {
-  id          String         @id @default(cuid())
-  tenantId    String         @map("tenant_id")
-  categoryId  String?        @map("category_id")
-  name        String
-  sku         String
-  barcode     String?
-  description String?
-  memberPrice Decimal        @db.Decimal(14, 2) @map("member_price")
-  retailPrice Decimal        @db.Decimal(14, 2) @map("retail_price")
-  pv          Decimal        @default(0) @db.Decimal(10, 2)
-  isActive    Boolean        @default(true) @map("is_active")
-  lowStockLimit Int          @default(5) @map("low_stock_limit")
-  deletedAt   DateTime?      @map("deleted_at")
-  createdAt   DateTime       @default(now()) @map("created_at")
-  updatedAt   DateTime       @updatedAt @map("updated_at")
-  tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  category    Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  images      ProductImage[]
-  priceHistory ProductPriceHistory[]
-  batches     ProductBatch[]
-  stockMovements StockMovement[]
+  id              String                @id @default(cuid())
+  tenantId        String                @map("tenant_id")
+  categoryId      String?               @map("category_id")
+  name            String
+  sku             String
+  barcode         String?
+  description     String?
+  memberPrice     Decimal               @map("member_price") @db.Decimal(14, 2)
+  retailPrice     Decimal               @map("retail_price") @db.Decimal(14, 2)
+  pv              Decimal               @default(0) @db.Decimal(10, 2)
+  isActive        Boolean               @default(true) @map("is_active")
+  lowStockLimit   Int                   @default(5) @map("low_stock_limit")
+  deletedAt       DateTime?             @map("deleted_at")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+  tenant          Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  category        Category?             @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  images          ProductImage[]
+  priceHistory    ProductPriceHistory[]
+  batches         ProductBatch[]
+  stockMovements  StockMovement[]
   inventoryAlerts InventoryAlert[]
+  saleItems       SaleItem[]
+  pvLogs          PvLog[]
 
   @@unique([tenantId, sku])
   @@index([tenantId, name])
@@ -168,22 +187,22 @@ model Warehouse {
 }
 
 model ProductBatch {
-  id                String          @id @default(cuid())
-  tenantId          String          @map("tenant_id")
-  productId         String          @map("product_id")
-  warehouseId       String          @map("warehouse_id")
-  batchCode         String          @map("batch_code")
-  expiryDate        DateTime?       @map("expiry_date") @db.Date
-  receivedQuantity  Decimal         @db.Decimal(14, 2) @map("received_quantity")
-  quantity          Decimal         @db.Decimal(14, 2)
-  unitCost          Decimal?        @db.Decimal(14, 2) @map("unit_cost")
-  receivedAt        DateTime        @default(now()) @map("received_at")
-  createdAt         DateTime        @default(now()) @map("created_at")
-  tenant            Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  product           Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
-  warehouse         Warehouse       @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
-  movements         StockMovement[]
-  alerts            InventoryAlert[]
+  id               String           @id @default(cuid())
+  tenantId         String           @map("tenant_id")
+  productId        String           @map("product_id")
+  warehouseId      String           @map("warehouse_id")
+  batchCode        String           @map("batch_code")
+  expiryDate       DateTime?        @map("expiry_date") @db.Date
+  receivedQuantity Decimal          @map("received_quantity") @db.Decimal(14, 2)
+  quantity         Decimal          @db.Decimal(14, 2)
+  unitCost         Decimal?         @map("unit_cost") @db.Decimal(14, 2)
+  receivedAt       DateTime         @default(now()) @map("received_at")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  tenant           Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product          Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouse        Warehouse        @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  movements        StockMovement[]
+  alerts           InventoryAlert[]
 
   @@unique([tenantId, productId, warehouseId, batchCode])
   @@index([tenantId, productId, expiryDate, receivedAt])
@@ -213,19 +232,19 @@ model StockMovement {
 }
 
 model InventoryAlert {
-  id          String       @id @default(cuid())
-  tenantId    String       @map("tenant_id")
+  id          String        @id @default(cuid())
+  tenantId    String        @map("tenant_id")
   fingerprint String
   kind        String
-  productId   String       @map("product_id")
-  batchId     String?      @map("batch_id")
+  productId   String        @map("product_id")
+  batchId     String?       @map("batch_id")
   message     String
-  quantity    Decimal?     @db.Decimal(14, 2)
-  expiresAt   DateTime?    @map("expires_at") @db.Date
-  observedAt  DateTime     @default(now()) @map("observed_at")
-  resolvedAt  DateTime?    @map("resolved_at")
-  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  product     Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity    Decimal?      @db.Decimal(14, 2)
+  expiresAt   DateTime?     @map("expires_at") @db.Date
+  observedAt  DateTime      @default(now()) @map("observed_at")
+  resolvedAt  DateTime?     @map("resolved_at")
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product     Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
   batch       ProductBatch? @relation(fields: [batchId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, fingerprint])
@@ -233,14 +252,175 @@ model InventoryAlert {
   @@map("inventory_alerts")
 }
 
+model Customer {
+  id              String              @id @default(cuid())
+  tenantId        String              @map("tenant_id")
+  name            String
+  phone           String?
+  address         String?
+  birthDate       DateTime?           @map("birth_date") @db.Date
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+  tenant          Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  hniProfile      CustomerHniProfile?
+  transactions    SaleTransaction[]
+  pvLogs          PvLog[]
+  networkNode     NetworkNode?        @relation("NetworkNodeCustomer")
+  networkChildren NetworkNode[]       @relation("NetworkNodeParent")
+
+  @@index([tenantId, name])
+  @@index([tenantId, phone])
+  @@map("customers")
+}
+
+model CustomerHniProfile {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  customerId  String   @unique @map("customer_id")
+  hniId       String   @map("hni_id")
+  uplineHniId String?  @map("upline_hni_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, hniId])
+  @@index([tenantId, uplineHniId])
+  @@map("customer_hni_profile")
+}
+
+model SaleTransaction {
+  id             String        @id @default(cuid())
+  tenantId       String        @map("tenant_id")
+  customerId     String?       @map("customer_id")
+  invoiceNo      String        @map("invoice_no")
+  receiptToken   String        @unique @map("receipt_token")
+  idempotencyKey String        @map("idempotency_key")
+  memberMode     Boolean       @default(false) @map("member_mode")
+  memberHniId    String?       @map("member_hni_id")
+  subtotal       Decimal       @db.Decimal(14, 2)
+  discount       Decimal       @default(0) @db.Decimal(14, 2)
+  voucherCode    String?       @map("voucher_code")
+  total          Decimal       @db.Decimal(14, 2)
+  cashReceived   Decimal       @map("cash_received") @db.Decimal(14, 2)
+  changeAmount   Decimal       @map("change_amount") @db.Decimal(14, 2)
+  totalPv        Decimal       @default(0) @map("total_pv") @db.Decimal(12, 2)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  tenant         Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer       Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  items          SaleItem[]
+  pvLogs         PvLog[]
+  whatsAppLogs   WhatsAppLog[]
+
+  @@unique([tenantId, invoiceNo])
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId, createdAt])
+  @@map("transactions")
+}
+
+model SaleItem {
+  id             String          @id @default(cuid())
+  transactionId  String          @map("transaction_id")
+  productId      String?         @map("product_id")
+  productName    String          @map("product_name")
+  sku            String
+  quantity       Decimal         @db.Decimal(14, 2)
+  unitPrice      Decimal         @map("unit_price") @db.Decimal(14, 2)
+  unitPv         Decimal         @map("unit_pv") @db.Decimal(12, 2)
+  lineTotal      Decimal         @map("line_total") @db.Decimal(14, 2)
+  discountAmount Decimal         @default(0) @map("discount_amount") @db.Decimal(14, 2)
+  transaction    SaleTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  product        Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([transactionId])
+  @@map("transaction_items")
+}
+
+model PvLog {
+  id            String          @id @default(cuid())
+  tenantId      String          @map("tenant_id")
+  transactionId String          @map("transaction_id")
+  customerId    String?         @map("customer_id")
+  productId     String?         @map("product_id")
+  pv            Decimal         @db.Decimal(12, 2)
+  createdAt     DateTime        @default(now()) @map("created_at")
+  tenant        Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  transaction   SaleTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  customer      Customer?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  product       Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, customerId, createdAt])
+  @@index([transactionId])
+  @@map("pv_logs")
+}
+
+model InvoiceCounter {
+  tenantId  String   @map("tenant_id")
+  date      DateTime @db.Date
+  nextValue Int      @default(1) @map("next_value")
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, date])
+  @@map("invoice_counters")
+}
+
+model Voucher {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  code         String
+  discountType String    @map("discount_type")
+  value        Decimal   @db.Decimal(14, 2)
+  minSubtotal  Decimal   @default(0) @map("min_subtotal") @db.Decimal(14, 2)
+  maxDiscount  Decimal?  @map("max_discount") @db.Decimal(14, 2)
+  maxUses      Int?      @map("max_uses")
+  usedCount    Int       @default(0) @map("used_count")
+  startsAt     DateTime? @map("starts_at")
+  endsAt       DateTime? @map("ends_at")
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, code])
+  @@index([tenantId, isActive, startsAt, endsAt])
+  @@map("vouchers")
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  date        DateTime @db.Date
+  category    String
+  description String?
+  amount      Decimal  @db.Decimal(14, 2)
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, date])
+  @@map("operating_expenses")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  userId    String   @map("user_id")
+  action    String
+  resource  String
+  createdAt DateTime @default(now()) @map("created_at")
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, userId, createdAt])
+  @@map("audit_logs")
+}
+
 model ProductPriceHistory {
   id                  String   @id @default(cuid())
   tenantId            String   @map("tenant_id")
   productId           String   @map("product_id")
-  previousMemberPrice Decimal  @db.Decimal(14, 2) @map("previous_member_price")
-  previousRetailPrice Decimal  @db.Decimal(14, 2) @map("previous_retail_price")
-  memberPrice         Decimal  @db.Decimal(14, 2) @map("member_price")
-  retailPrice         Decimal  @db.Decimal(14, 2) @map("retail_price")
+  previousMemberPrice Decimal  @map("previous_member_price") @db.Decimal(14, 2)
+  previousRetailPrice Decimal  @map("previous_retail_price") @db.Decimal(14, 2)
+  memberPrice         Decimal  @map("member_price") @db.Decimal(14, 2)
+  retailPrice         Decimal  @map("retail_price") @db.Decimal(14, 2)
   source              String   @default("manual")
   changedByUserId     String?  @map("changed_by_user_id")
   createdAt           DateTime @default(now()) @map("created_at")
@@ -265,4 +445,57 @@ model ProductImage {
 
   @@index([tenantId, productId, position])
   @@map("product_images")
+}
+
+model WhatsAppLog {
+  id                String           @id @default(cuid())
+  tenantId          String           @map("tenant_id")
+  transactionId     String?          @map("transaction_id")
+  phone             String
+  template          String
+  provider          String
+  status            String
+  providerMessageId String?          @map("provider_message_id")
+  error             String?
+  durationMs        Int?             @map("duration_ms")
+  createdBy         String?          @map("created_by")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  tenant            Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  transaction       SaleTransaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([transactionId])
+  @@map("whatsapp_logs")
+}
+
+/// Normalized upline → downline relation, rebuilt from customer_hni_profile.upline_hni_id.
+model NetworkNode {
+  id                  String    @id @default(cuid())
+  tenantId            String    @map("tenant_id")
+  customerId          String    @unique @map("customer_id")
+  parentCustomerId    String?   @map("parent_customer_id")
+  depth               Int       @default(0)
+  /// Upline HNI ID that could not be matched to a member in this store (external upline).
+  externalUplineHniId String?   @map("external_upline_hni_id")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  tenant              Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer            Customer  @relation("NetworkNodeCustomer", fields: [customerId], references: [id], onDelete: Cascade)
+  parent              Customer? @relation("NetworkNodeParent", fields: [parentCustomerId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, parentCustomerId])
+  @@map("network_tree")
+}
+
+/// Tenant-configurable bonus scheme (ranks, PV value, generation rates, badges). Not an official HPAI formula.
+model BonusScheme {
+  id        String   @id @default(cuid())
+  tenantId  String   @unique @map("tenant_id")
+  config    Json
+  updatedBy String?  @map("updated_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("bonus_schemes")
 }

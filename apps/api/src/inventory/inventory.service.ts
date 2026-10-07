@@ -183,9 +183,10 @@ export class InventoryService {
         ...(warehouseId ? { warehouseId } : {}),
         OR: [{ expiryDate: null }, { expiryDate: { gte: today } }],
       },
-      orderBy: [{ expiryDate: "asc" }, { receivedAt: "asc" }],
+      orderBy: [{ expiryDate: { sort: "asc", nulls: "last" } }, { receivedAt: "asc" }],
     });
-    const available = batches.reduce((sum, batch) => sum + Number(batch.quantity), 0);
+    // Round to the 2-decimal stock precision so float drift (0.7 + 0.1 = 0.7999…) cannot reject a valid request.
+    const available = Number(batches.reduce((sum, batch) => sum + Number(batch.quantity), 0).toFixed(2));
     if (available < requestedQuantity) {
       throw new BadRequestException(`Stok tidak cukup. Tersedia ${available}, diminta ${requestedQuantity}.`);
     }

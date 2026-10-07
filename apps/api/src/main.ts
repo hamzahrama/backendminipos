@@ -1,5 +1,6 @@
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import type { NestExpressApplication } from "@nestjs/platform-express";
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
@@ -11,8 +12,21 @@ async function bootstrap() {
     }
   }
 
-  const app = await NestFactory.create(AppModule);
-  app.enableCors({ origin: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // Behind a reverse proxy (Caddy), trust its X-Forwarded-For so rate limits apply per client IP.
+  const trustProxy = Number(process.env.TRUST_PROXY ?? 0);
+  if (Number.isInteger(trustProxy) && trustProxy > 0) app.set("trust proxy", trustProxy);
+  const allowedOrigins = (process.env.CORS_ORIGINS ?? "http://localhost:3000")
+    .split(",").map((origin) => origin.trim()).filter(Boolean);
+  app.enableCors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("Origin tidak diizinkan."), false);
+    },
+    methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-tenant-id"],
+    maxAge: 600,
+  });
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
   );

@@ -29,7 +29,7 @@ export class AlertsService implements OnModuleInit {
   async getActiveAlerts(tenantId: string) {
     await this.refreshTenant(tenantId);
     return this.prisma.inventoryAlert.findMany({
-      where: { resolvedAt: null },
+      where: { tenantId, resolvedAt: null },
       include: {
         product: { select: { id: true, name: true, sku: true, lowStockLimit: true } },
         batch: { select: { id: true, batchCode: true, expiryDate: true } },

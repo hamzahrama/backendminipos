@@ -2,6 +2,18 @@
 
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
+import PosTerminal from "../components/pos-terminal";
+import CustomersPanel from "../components/customers-panel";
+import VouchersPanel from "../components/vouchers-panel";
+import NetworkPanel from "../components/network-panel";
+import StorefrontPanel from "../components/storefront-panel";
+import WhatsAppLogsPanel from "../components/whatsapp-logs-panel";
+import BonusPanel from "../components/bonus-panel";
+
+const ReportsPanel = dynamic(() => import("../components/reports-panel"), { ssr: false });
+const ProfitLossPanel = dynamic(() => import("../components/profit-loss-panel"), { ssr: false });
+const PvReportPanel = dynamic(() => import("../components/pv-report-panel"), { ssr: false });
 
 type AuthMode = "login" | "register";
 
@@ -420,6 +432,7 @@ export default function Home() {
 }
 
 function CatalogDashboard({ session }: { session: AuthSession }) {
+  const [activePanel, setActivePanel] = useState<"catalog" | "pos" | "customers" | "vouchers" | "reports" | "profit-loss" | "pv" | "network" | "storefront" | "whatsapp" | "bonus">("catalog");
   const [products, setProducts] = useState<ProductPage | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState({ ...emptyProduct });
@@ -655,8 +668,20 @@ function CatalogDashboard({ session }: { session: AuthSession }) {
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Kategori gagal diperbarui."); }
   }
 
+  if (activePanel === "pos") return <div className="catalog-dashboard"><nav className="dashboard-tabs" aria-label="Navigasi dashboard"><button onClick={() => setActivePanel("catalog")} type="button">← Kembali ke dashboard</button></nav><PosTerminal session={session} /></div>;
+  if (activePanel === "customers") return <div className="catalog-dashboard"><nav className="dashboard-tabs" aria-label="Navigasi dashboard"><button onClick={() => setActivePanel("catalog")} type="button">← Kembali ke dashboard</button><button className="active" type="button">Customer</button><button onClick={() => setActivePanel("pos")} type="button">Buka terminal POS</button></nav><CustomersPanel session={session} /></div>;
+  if (activePanel === "vouchers") return <div className="catalog-dashboard"><nav className="dashboard-tabs" aria-label="Navigasi dashboard"><button onClick={() => setActivePanel("catalog")} type="button">← Kembali ke dashboard</button><button className="active" type="button">Voucher</button><button onClick={() => setActivePanel("pos")} type="button">Buka terminal POS</button></nav><VouchersPanel session={session} /></div>;
+  if (activePanel === "reports") return <div className="catalog-dashboard"><nav className="dashboard-tabs" aria-label="Navigasi dashboard"><button onClick={() => setActivePanel("catalog")} type="button">← Kembali ke dashboard</button><button className="active" type="button">Laporan</button></nav><ReportsPanel session={session} /></div>;
+  if (activePanel === "profit-loss") return <div className="catalog-dashboard"><nav className="dashboard-tabs" aria-label="Navigasi dashboard"><button onClick={() => setActivePanel("catalog")} type="button">← Kembali ke dashboard</button><button className="active" type="button">Laba rugi</button></nav><ProfitLossPanel session={session} /></div>;
+  if (activePanel === "pv") return <div className="catalog-dashboard"><nav className="dashboard-tabs" aria-label="Navigasi dashboard"><button onClick={() => setActivePanel("catalog")} type="button">← Kembali ke dashboard</button><button className="active" type="button">Rekap PV</button></nav><PvReportPanel session={session} /></div>;
+  if (activePanel === "network") return <div className="catalog-dashboard"><nav className="dashboard-tabs" aria-label="Navigasi dashboard"><button onClick={() => setActivePanel("catalog")} type="button">← Kembali ke dashboard</button><button className="active" type="button">Jaringan HNI</button></nav><NetworkPanel session={session} /></div>;
+  if (activePanel === "storefront") return <div className="catalog-dashboard"><nav className="dashboard-tabs" aria-label="Navigasi dashboard"><button onClick={() => setActivePanel("catalog")} type="button">← Kembali ke dashboard</button><button className="active" type="button">Katalog publik</button></nav><StorefrontPanel session={session} /></div>;
+  if (activePanel === "whatsapp") return <div className="catalog-dashboard"><nav className="dashboard-tabs" aria-label="Navigasi dashboard"><button onClick={() => setActivePanel("catalog")} type="button">← Kembali ke dashboard</button><button className="active" type="button">Log WhatsApp</button></nav><WhatsAppLogsPanel session={session} /></div>;
+  if (activePanel === "bonus") return <div className="catalog-dashboard"><nav className="dashboard-tabs" aria-label="Navigasi dashboard"><button onClick={() => setActivePanel("catalog")} type="button">← Kembali ke dashboard</button><button className="active" type="button">Bonus & leaderboard</button></nav><BonusPanel session={session} /></div>;
+
   return (
     <div className="catalog-dashboard">
+      <nav className="dashboard-tabs" aria-label="Navigasi dashboard"><button className="active" type="button">Katalog & stok</button><button onClick={() => setActivePanel("customers")} type="button">Customer</button>{session.user.roles.includes("owner") && <button onClick={() => setActivePanel("vouchers")} type="button">Voucher</button>}{session.user.roles.includes("owner") && <button onClick={() => setActivePanel("reports")} type="button">Laporan</button>}{session.user.roles.includes("owner") && <button onClick={() => setActivePanel("profit-loss")} type="button">Laba rugi</button>}{session.user.roles.includes("owner") && <button onClick={() => setActivePanel("pv")} type="button">Rekap PV</button>}{session.user.roles.includes("owner") && <button onClick={() => setActivePanel("network")} type="button">Jaringan HNI</button>}{session.user.roles.includes("owner") && <button onClick={() => setActivePanel("bonus")} type="button">Bonus</button>}{session.user.roles.includes("owner") && <button onClick={() => setActivePanel("storefront")} type="button">Katalog publik</button>}{session.user.roles.includes("owner") && <button onClick={() => setActivePanel("whatsapp")} type="button">Log WhatsApp</button>}<button onClick={() => setActivePanel("pos")} type="button">Buka terminal POS</button></nav>
       <div className="catalog-heading"><div><span className="dashboard-label">MASTER DATA</span><h3>Produk toko</h3><p>Kelola katalog dan harga produk Anda.</p></div><span className="product-count">{products?.total ?? 0} produk</span></div>
       {error && <p className="feedback error" role="alert">{error}</p>}
       {message && <p className="feedback success" role="status">{message}</p>}

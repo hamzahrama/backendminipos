@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
@@ -17,6 +18,14 @@ import {
 import { PrismaService } from "../prisma/prisma.service";
 
 const ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
+const TENANT_STATUS_CACHE_MS = 30_000;
+export const SUSPENDED_MESSAGE = "Toko ini sedang ditangguhkan. Hubungi admin platform.";
+
+/** Platform super admins are configured by email, independent of tenant roles. */
+export function isSuperAdminEmail(email: string, env: NodeJS.ProcessEnv = process.env) {
+  const list = (env.SUPER_ADMIN_EMAILS ?? "").split(",").map((item) => item.trim().toLowerCase()).filter(Boolean);
+  return list.includes(email.trim().toLowerCase());
+}
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const PERMISSIONS = [
   { code: "dashboard:read", description: "Melihat dashboard" },
@@ -63,6 +72,8 @@ type TokenPair = {
 
 @Injectable()
 export class AuthService {
+  private readonly tenantStatusCache = new Map<string, { status: string; expiresAt: number }>();
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
@@ -172,6 +183,7 @@ export class AuthService {
     if (!membership || !passwordIsValid) {
       throw new UnauthorizedException("Email, password, atau nama toko tidak sesuai.");
     }
+    this.assertMembershipTenantActive(membership);
 
     return this.createSession(this.toIdentity(membership));
   }
@@ -257,6 +269,7 @@ export class AuthService {
       },
     });
     if (!membership) throw new UnauthorizedException("Akses toko sudah tidak tersedia.");
+    this.assertMembershipTenantActive(membership);
 
     const identity = this.toIdentity(membership);
     const tokens = await this.buildTokenPair(identity, storedToken.familyId);
@@ -329,6 +342,30 @@ export class AuthService {
     }
   }
 
+  /** Rejects requests for suspended tenants (cached briefly); super admins keep access to their own store. */
+  async assertTenantActive(claims: AccessTokenClaims) {
+    if (claims.roles.includes("super_admin")) return;
+    const now = Date.now();
+    let cached = this.tenantStatusCache.get(claims.tenantId);
+    if (!cached || cached.expiresAt <= now) {
+      const tenant = await this.prisma.tenant.findUnique({ where: { id: claims.tenantId }, select: { status: true } });
+      if (!tenant) throw new UnauthorizedException("Toko tidak ditemukan.");
+      cached = { status: tenant.status, expiresAt: now + TENANT_STATUS_CACHE_MS };
+      this.tenantStatusCache.set(claims.tenantId, cached);
+    }
+    if (cached.status !== "ACTIVE") throw new ForbiddenException(SUSPENDED_MESSAGE);
+  }
+
+  invalidateTenantStatus(tenantId: string) {
+    this.tenantStatusCache.delete(tenantId);
+  }
+
+  private assertMembershipTenantActive(membership: { tenant: { status?: string }; user: { email: string } }) {
+    if (membership.tenant.status && membership.tenant.status !== "ACTIVE" && !isSuperAdminEmail(membership.user.email)) {
+      throw new ForbiddenException(SUSPENDED_MESSAGE);
+    }
+  }
+
   private async createTenantSlug(name: string, tx: Prisma.TransactionClient) {
     const baseSlug =
       name
@@ -350,7 +387,7 @@ export class AuthService {
       tenantId: membership.tenant.id,
       tenantName: membership.tenant.name,
       tenantSlug: membership.tenant.slug,
-      roles: [membership.role.code],
+      roles: isSuperAdminEmail(membership.user.email) ? [membership.role.code, "super_admin"] : [membership.role.code],
       permissions: membership.role.permissions.map(({ permission }) => permission.code),
     };
   }

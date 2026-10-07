@@ -33,14 +33,14 @@ import { CatalogService } from "./catalog.service";
 export class CatalogController {
   constructor(private readonly catalog: CatalogService) {}
 
-  @Get("categories") listCategories() { return this.catalog.listCategories(); }
+  @Get("categories") @RequireRole("owner", "cashier") listCategories() { return this.catalog.listCategories(); }
   @Post("categories") createCategory(@Body() body: CreateCategoryDto) { return this.catalog.createCategory(body.name); }
   @Patch("categories/:id") updateCategory(@Param("id") id: string, @Body() body: UpdateCategoryDto) {
     return this.catalog.updateCategory(id, body.name!);
   }
   @Delete("categories/:id") deleteCategory(@Param("id") id: string) { return this.catalog.deleteCategory(id); }
 
-  @Get("products") listProducts(@Query() query: ListProductsQueryDto) { return this.catalog.listProducts(query); }
+  @Get("products") @RequireRole("owner", "cashier") listProducts(@Query() query: ListProductsQueryDto) { return this.catalog.listProducts(query); }
   @Post("products/import/preview")
   @UseInterceptors(FileInterceptor("file", { limits: { fileSize: 1_048_576 } }))
   previewImport(@UploadedFile() file?: { buffer: Buffer }) {

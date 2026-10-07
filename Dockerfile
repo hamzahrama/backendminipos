@@ -1,7 +1,8 @@
 FROM node:20-alpine
 
-RUN apk add --no-cache openssl && corepack enable
+RUN apk add --no-cache openssl postgresql-client && corepack enable
 WORKDIR /workspace
+ENV NEXT_TELEMETRY_DISABLED=1
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY apps/api/package.json ./apps/api/package.json
 COPY apps/web/package.json ./apps/web/package.json
