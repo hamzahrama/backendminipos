@@ -8,8 +8,5 @@ coverage/
 .env.*
 !.env.example
 !.env.production.example
-apps/*/.env
-apps/*/.env.*
-!apps/*/.env.example
 *.log
 .DS_Store

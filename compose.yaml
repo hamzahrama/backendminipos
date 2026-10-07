@@ -1,24 +1,9 @@
 services:
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: ["pnpm", "--filter", "web", "dev", "--hostname", "0.0.0.0"]
-    ports:
-      - "${WEB_PORT:-3000}:3000"
-    environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
-      API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4000}
-      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
-      NEXT_TELEMETRY_DISABLED: "1"
-    depends_on:
-      - api
-
   api:
     build:
       context: .
       dockerfile: Dockerfile
-    command: ["sh", "-c", "pnpm --filter backend db:deploy && pnpm --filter backend start:dev"]
+    command: ["sh", "-c", "pnpm db:deploy && pnpm start:dev"]
     ports:
       - "${API_PORT:-4000}:4000"
     environment:

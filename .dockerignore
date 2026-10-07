@@ -1,10 +1,17 @@
 .git
 .kilo
+.agents
+.codex
 node_modules
 **/node_modules
 .next
 **/.next
+.turbo
+**/.turbo
 dist
 **/dist
+coverage
+**/coverage
 .env
 **/.env
+*.log

@@ -2,6 +2,7 @@
 
 ## Web Mini POS & Inventaris HNI
 
+> **Polyrepo (sejak 2026-10-07):** proyek terpecah menjadi dua repo — repo ini (`night-atrociraptor`, backend NestJS/Prisma) dan `night-atrociraptor-web` (frontend Next.js). Task web dikerjakan di repo frontend; backlog ini tetap menjadi acuan utama fitur keseluruhan.
 > **Aturan:** Setiap hari memiliki **1-3 task utama**. Fokus pada **working software** bukan dokumentasi berlebihan. Gunakan metode _"walking skeleton"_ — pastikan alur end-to-end berjalan dulu, baru sempurnakan.  
 > **Start Date:** 2026-10-01  
 > **Target Launch:** 2026-10-30

@@ -9,18 +9,18 @@
 
 1. Salin `.env.example` menjadi `.env` dan sesuaikan nilainya. Ganti kedua secret JWT dengan nilai acak minimal 32 karakter sebelum production.
 2. Jalankan `docker compose up --build` dari direktori proyek.
-3. Buka web di <http://localhost:3000>, API di <http://localhost:4000/health>, dan Adminer di <http://localhost:8080>.
+3. Buka API di <http://localhost:4000/health> dan Adminer di <http://localhost:8080>. Web (repo frontend `night-atrociraptor-web`) berjalan di <http://localhost:3000> bila dijalankan terpisah.
 4. Untuk Adminer, pilih server `postgres`, database `hni_pos`, username `hni_pos`, dan password dari `.env`.
 
 PostgreSQL dan Redis menyimpan data dalam Docker volumes. Hentikan stack dengan `docker compose down`; gunakan `docker compose down -v` hanya jika data lokal ingin dihapus.
 
 ## Jalankan aplikasi di host
 
-1. Salin `.env.example` menjadi `.env` dan `backend/api/.env` agar Prisma bisa membaca URL database saat migrasi lokal.
+1. Salin `.env.example` menjadi `.env` agar Prisma bisa membaca URL database saat migrasi lokal.
 2. Jalankan `docker compose up -d postgres redis adminer`.
 3. Jalankan `pnpm install`, `pnpm db:migrate`, lalu `pnpm dev`.
 
-Perintah workspace tersedia melalui `pnpm dev`, `pnpm lint`, `pnpm test`, dan `pnpm build`. Coverage API: `pnpm --filter api test:coverage` (ambang minimum 60% untuk lines/statements/functions/branches, juga dijalankan di CI). Skema Prisma berada di `backend/api/prisma/schema.prisma`; jalankan `pnpm db:generate` setelah mengubah skema. Docker otomatis menjalankan migrasi yang tersedia saat API mulai.
+Perintah tersedia melalui `pnpm dev`, `pnpm lint`, `pnpm test`, dan `pnpm build`. Coverage API: `pnpm test:coverage` (ambang minimum 60% untuk lines/statements/functions/branches, juga dijalankan di CI). Skema Prisma berada di `prisma/schema.prisma`; jalankan `pnpm db:generate` setelah mengubah skema. Docker otomatis menjalankan migrasi yang tersedia saat API mulai.
 
 ## Autentikasi
 
@@ -78,9 +78,7 @@ Request yang sudah login wajib mengirim `x-tenant-id` sesuai `tenant.id` dari re
 
 ## Struktur
 
-- `frontend/web`: Next.js 14 dengan TypeScript.
-- `backend/api`: NestJS, Prisma, dan endpoint pemeriksaan `/health`.
-- `packages/shared`: tipe dan utilitas yang dibagikan antar aplikasi.
+- `.`: NestJS, Prisma, dan endpoint pemeriksaan `/health`. Frontend (Next.js) berada di repo terpisah `night-atrociraptor-web`.
 
 ## Katalog publik dan deployment
 

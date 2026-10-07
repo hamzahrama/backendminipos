@@ -28,7 +28,7 @@
 
 ## Sedang dikerjakan
 
-- **2026-10-07 — Perbaikan workspace pasca-restrukturisasi:** commit restrukturisasi (8dd2f58) memindahkan `apps/api`→`backend/api` dan `apps/web`→`frontend/web` tanpa memperbarui konfigurasi. Diperbaiki: `pnpm-workspace.yaml` (`backend/*`, `frontend/*`), script `db:*` root & CI (`--filter api`), `COPY` package.json di kedua Dockerfile, dan path di README/SETUP.md. Test `public-catalog` juga disinkronkan dengan pengecekan `status: "ACTIVE"` tenant (katalog tenant suspended kini tersembunyi). Baseline terverifikasi ulang: 212 test, lint, build, dan coverage (69,97% lines / 84,8% branches) semua lulus.
+- **2026-10-07 — Polyrepo + satu branch:** repo terpecah menjadi `night-atrociraptor` (backend, repo ini) dan `night-atrociraptor-web` (frontend Next.js, repo baru). `packages/shared` dihapus (tidak terpakai), konfigurasi monorepo (turbo/workspace filter) dihilangkan, tiap repo punya lockfile, Dockerfile, CI, dan dokumentasi sendiri. Branch `feature/lanjutkan-fitur-ai-baru` sudah di-merge ke `main` dan dihapus (lokal + remote) — pengembangan berjalan di `main` saja.
 - API dan web sudah dibangun ulang dari source terbaru di Compose. Layanan berjalan; database sehat dan endpoint yang dicek merespons sesuai status di atas.
 
 ## Belum dikerjakan
