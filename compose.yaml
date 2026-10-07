@@ -18,7 +18,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: ["sh", "-c", "pnpm --filter api db:deploy && pnpm --filter api start:dev"]
+    command: ["sh", "-c", "pnpm --filter backend db:deploy && pnpm --filter backend start:dev"]
     ports:
       - "${API_PORT:-4000}:4000"
     environment:

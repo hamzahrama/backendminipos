@@ -9,10 +9,10 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml,css}\"",
-    "db:generate": "pnpm --filter api db:generate",
-    "db:migrate": "pnpm --filter api db:migrate",
-    "db:deploy": "pnpm --filter api db:deploy",
-    "db:studio": "pnpm --filter api db:studio"
+    "db:generate": "pnpm --filter backend db:generate",
+    "db:migrate": "pnpm --filter backend db:migrate",
+    "db:deploy": "pnpm --filter backend db:deploy",
+    "db:studio": "pnpm --filter backend db:studio"
   },
   "devDependencies": {
     "prettier": "^3.5.3",

@@ -28,7 +28,7 @@ services:
       context: .
       dockerfile: Dockerfile.production
       target: production
-    command: ["sh", "-c", "pnpm --filter api db:deploy && pnpm --filter api start"]
+    command: ["sh", "-c", "pnpm --filter backend db:deploy && pnpm --filter backend start"]
     environment:
       NODE_ENV: production
       PORT: 4000
