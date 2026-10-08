@@ -25,7 +25,7 @@ export class WhatsAppService {
     const tenantId = this.tenantContext.getTenantId();
     if (!tenantId) throw new NotFoundException("Konteks toko tidak ditemukan.");
     const sale = await this.prisma.saleTransaction.findFirst({
-      where: { id: transactionId },
+      where: { id: transactionId, tenantId },
       select: {
         id: true, invoiceNo: true, receiptToken: true, createdAt: true, discount: true, total: true, totalPv: true,
         tenant: { select: { name: true } }, customer: { select: { name: true, phone: true } },
@@ -40,7 +40,7 @@ export class WhatsAppService {
     if (!phone) throw new BadRequestException("Nomor WhatsApp tidak valid. Gunakan format 08xx atau 628xx.");
 
     const recent = await this.prisma.whatsAppLog.count({
-      where: { transactionId: sale.id, createdAt: { gte: new Date(Date.now() - SEND_WINDOW_MS) } },
+      where: { transactionId: sale.id, status: { in: ["SENT", "FAILED"] }, createdAt: { gte: new Date(Date.now() - SEND_WINDOW_MS) } },
     });
     if (recent >= MAX_SENDS_PER_TRANSACTION) {
       throw new HttpException("Struk ini sudah dikirim beberapa kali. Coba lagi 10 menit lagi.", HttpStatus.TOO_MANY_REQUESTS);
@@ -72,7 +72,10 @@ export class WhatsAppService {
   }
 
   logs(limit = 50) {
+    const tenantId = this.tenantContext.getTenantId();
+    if (!tenantId) throw new NotFoundException("Konteks toko tidak ditemukan.");
     return this.prisma.whatsAppLog.findMany({
+      where: { tenantId },
       take: Math.max(1, Math.min(limit, 200)), orderBy: { createdAt: "desc" },
       select: {
         id: true, phone: true, template: true, provider: true, status: true, error: true, durationMs: true, createdAt: true,

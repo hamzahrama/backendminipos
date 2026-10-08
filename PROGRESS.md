@@ -26,6 +26,11 @@
 - Laporan omzet dan P&L juga cocok dengan transaksi/pengeluaran sementara; seluruh akun uji dan tenant terkait telah dihapus.
 - Lint dan build API/web berhasil setelah perubahan terakhir. Empat file suite API yang sudah ada lulus, total 13 test. `git diff --check` bersih. Coverage belum dihitung dan flow E2E/load/UAT belum berjalan.
 
+## Selesai pada 8 Oktober 2026
+
+- **Day 13 WhatsApp (hardening keamanan di `main`):** `GET /whatsapp/logs` dan pencarian transaksi pada `POST /transactions/:id/whatsapp` kini difilter `tenantId` secara eksplisit (sebelumnya lintas toko — owner toko A bisa membaca nomor pelanggan toko B). Batas kirim 3×/10 menit kini hanya menghitung `SENT`/`FAILED`, sehingga `SKIPPED` (gateway belum aktif) tidak lagi memicu 429. Empat unit test baru; total 216 test lulus, lint/build bersih.
+- Integrasi eksternal (WhatsApp Fonnte/Wablas, SMTP laporan, backup S3) dipastikan sudah lengkap kodenya dan ter-wiring di compose; yang tersisa adalah kredensial pemilik layanan serta verifikasi kirim/restore. Langkah operasional tercatat di `SETUP.md`.
+
 ## Sedang dikerjakan
 
 - **2026-10-07 — Polyrepo + satu branch:** repo terpecah menjadi `night-atrociraptor` (backend, repo ini) dan `night-atrociraptor-web` (frontend Next.js, repo baru). `packages/shared` dihapus (tidak terpakai), konfigurasi monorepo (turbo/workspace filter) dihilangkan, tiap repo punya lockfile, Dockerfile, CI, dan dokumentasi sendiri. Branch `feature/lanjutkan-fitur-ai-baru` sudah di-merge ke `main` dan dihapus (lokal + remote) — pengembangan berjalan di `main` saja.

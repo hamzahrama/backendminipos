@@ -276,6 +276,14 @@
 
 ---
 
+## 📝 Log Perkembangan — Branch `main`
+
+- **2026-10-08 — Day 13 WhatsApp hardening (selesai):**
+  - Perbaikan keamanan lintas tenant: `WhatsAppService.logs()` dan `saleTransaction.findFirst()` pada `sendReceipt` kini menyertakan `where.tenantId`; sebelumnya owner toko A dapat membaca log WA (nomor pelanggan) milik toko B.
+  - Rate limit 3×/10 menit per transaksi kini hanya menghitung log `SENT`/`FAILED`; `SKIPPED` (gateway belum dikonfigurasi) tidak menghambat retry.
+  - 4 unit test baru (tenant scope lookup, tenant scope logs, status counter, reject tanpa konteks). Total **216 test** lulus; lint, build, dan `git diff --check` bersih.
+  - **Butuh dari pemilik (tidak berubah):** pilihan provider (Fonnte/Wablas) + token, lalu uji kirim ke nomor asli.
+
 ## 📝 Log Perkembangan — Branch `feature/lanjutkan-fitur-ai-baru`
 
 > Dicatat berurutan saat setiap item backlog dikerjakan. Item yang butuh kredensial/akun eksternal ditandai **kode siap, belum terverifikasi** sampai diuji dengan layanan aslinya.

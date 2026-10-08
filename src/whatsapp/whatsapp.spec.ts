@@ -1,4 +1,4 @@
-import { BadGatewayException, BadRequestException, ServiceUnavailableException } from "@nestjs/common";
+import { BadGatewayException, BadRequestException, NotFoundException, ServiceUnavailableException } from "@nestjs/common";
 import { describe, expect, it, vi } from "vitest";
 import { PrismaService } from "../prisma/prisma.service";
 import { TenantContextService } from "../tenant/tenant-context.service";
@@ -102,5 +102,43 @@ describe("WhatsAppService.sendReceipt", () => {
     const { run, service } = makeService(gateway);
     await expect(run(() => service.sendReceipt("trx-1", "123", "user-1"))).rejects.toBeInstanceOf(BadRequestException);
     expect(gateway.send).not.toHaveBeenCalled();
+  });
+
+  it("scopes the transaction lookup to the active tenant", async () => {
+    const gateway = { provider: "fonnte", enabled: true, send: vi.fn().mockResolvedValue({ ok: true, provider: "fonnte", providerMessageId: "m1", durationMs: 1 }) } as unknown as WhatsAppGateway;
+    const { prisma, run, service } = makeService(gateway);
+    await run(() => service.sendReceipt("trx-1", undefined, "user-1"));
+    expect(prisma.saleTransaction.findFirst.mock.calls[0][0].where).toMatchObject({ tenantId: "tenant-1" });
+  });
+
+  it("counts only real delivery attempts against the send limit", async () => {
+    const gateway = { provider: "fonnte", enabled: true, send: vi.fn().mockResolvedValue({ ok: true, provider: "fonnte", providerMessageId: "m1", durationMs: 1 }) } as unknown as WhatsAppGateway;
+    const { prisma, run, service } = makeService(gateway);
+    await run(() => service.sendReceipt("trx-1", undefined, "user-1"));
+    expect(prisma.whatsAppLog.count.mock.calls[0][0].where.status).toEqual({ in: ["SENT", "FAILED"] });
+  });
+});
+
+describe("WhatsAppService.logs", () => {
+  function makeLogsService() {
+    const prisma = {
+      saleTransaction: { findFirst: vi.fn() },
+      whatsAppLog: { count: vi.fn().mockResolvedValue(0), create: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
+    };
+    const context = new TenantContextService();
+    const service = new WhatsAppService(prisma as unknown as PrismaService, context, { provider: "disabled" } as unknown as WhatsAppGateway);
+    return { prisma, context, service };
+  }
+
+  it("only returns logs of the active tenant", async () => {
+    const { prisma, context, service } = makeLogsService();
+    await context.run("tenant-1", () => service.logs(25));
+    expect(prisma.whatsAppLog.findMany.mock.calls[0][0].where).toEqual({ tenantId: "tenant-1" });
+    expect(prisma.whatsAppLog.findMany.mock.calls[0][0].take).toBe(25);
+  });
+
+  it("rejects reads without tenant context", () => {
+    const { service } = makeLogsService();
+    expect(() => service.logs()).toThrow(NotFoundException);
   });
 });
