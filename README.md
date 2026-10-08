@@ -40,3 +40,4 @@ Dockerfile      → build dev | Dockerfile.production → multi-stage production
 ## Deploy (belum production)
 
 Template deployment ada di `Dockerfile.production`, `compose.production.yaml`, dan `Caddyfile`. Layanan `web` di `compose.production.yaml` memakai gambar dari repo frontend (`WEB_IMAGE`, default `ghcr.io/hamzahrama/night-atrociraptor-web:latest`). Domain, VPS, secret, serta kredensial storage/email harus diisi pemilik sebelum layanan ini dijalankan.
+# backendminipos
