@@ -26,7 +26,14 @@ export class BackupService implements OnModuleInit {
   }
 
   onModuleInit() {
-    if (!this.isConfigured()) this.logger.warn("Backup harian nonaktif; konfigurasi S3_BACKUP_BUCKET dan akses S3 untuk mengaktifkannya.");
+    if (!this.isConfigured()) {
+      const hasAnyS3Config = Boolean(this.bucket || this.s3);
+      if (hasAnyS3Config || process.env.NODE_ENV === "production") {
+        this.logger.warn("Backup harian nonaktif; konfigurasi S3_BACKUP_BUCKET dan akses S3 untuk mengaktifkannya.");
+      } else {
+        this.logger.log("Backup harian nonaktif (mode lokal; S3_BACKUP_BUCKET belum diatur).");
+      }
+    }
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM, { timeZone: "Asia/Jakarta" })
