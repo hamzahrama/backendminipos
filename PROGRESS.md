@@ -29,6 +29,7 @@
 ## Selesai pada 8 Oktober 2026
 
 - **Day 13 WhatsApp (hardening keamanan di `main`):** `GET /whatsapp/logs` dan pencarian transaksi pada `POST /transactions/:id/whatsapp` kini difilter `tenantId` secara eksplisit (sebelumnya lintas toko — owner toko A bisa membaca nomor pelanggan toko B). Batas kirim 3×/10 menit kini hanya menghitung `SENT`/`FAILED`, sehingga `SKIPPED` (gateway belum aktif) tidak lagi memicu 429. Empat unit test baru; total 216 test lulus, lint/build bersih.
+- **Day 24 Super Admin (backend + test):** `AdminService`/`AdminController` (`/admin/summary`, `/admin/tenants`, `/admin/tenants/:id`, `PATCH /admin/tenants/:id/status`) lengkap dengan `runUnscoped` agar query platform tidak terkontaminasi scope tenant; suspend menolak diri sendiri, mewajibkan alasan, mencabut semua refresh token, menulis audit `PLATFORM_SUSPEND`/`PLATFORM_ACTIVATE`, dan meng-invalidate cache status tenant. 12 unit test baru (`admin.service.spec.ts`); total **228 test** lulus, coverage 73,8% lines / 85,3% branches, lint/build bersih.
 - Integrasi eksternal (WhatsApp Fonnte/Wablas, SMTP laporan, backup S3) dipastikan sudah lengkap kodenya dan ter-wiring di compose; yang tersisa adalah kredensial pemilik layanan serta verifikasi kirim/restore. Langkah operasional tercatat di `SETUP.md`.
 
 ## Sedang dikerjakan
