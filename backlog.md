@@ -210,10 +210,10 @@
 
 ### **Day 24 — Super Admin Panel**
 
-- [ ] Halaman list tenant (super admin only).
-- [ ] Usage metrics per tenant (storage, transaksi).
-- [ ] Suspend/activate tenant.
-- [ ] **Deliverable:** Super admin kelola semua tenant.
+- [x] Halaman list tenant (super admin only).
+- [x] Usage metrics per tenant (storage, transaksi).
+- [x] Suspend/activate tenant.
+- [x] **Deliverable:** Super admin kelola semua tenant (backend API + frontend UI di `SuperAdminPanel`).
 
 ### **Day 25 — Billing & Subscription**
 
@@ -270,9 +270,9 @@
 | Minggu | Target Selesai | Status |
 | ------ | -------------- | ------ |
 | Week 1 | 7/7 Day done   | ✅     |
-| Week 2 | 6/7 Day done   | 🟡     |
-| Week 3 | 4/7 Day done   | 🟡     |
-| Week 4 | 0/9 Day done; beberapa kode parsial | 🟡 |
+| Week 2 | 7/7 Day code done (Day 13 menunggu token provider live) | 🟡 |
+| Week 3 | 7/7 Day code done (Day 17 & 20 menunggu data eksternal) | 🟡 |
+| Week 4 | 3/9 Day done (Day 22, 23, 24 selesai; Day 26–28 sebagian) | 🟡 |
 
 ---
 
