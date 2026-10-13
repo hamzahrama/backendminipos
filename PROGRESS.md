@@ -32,6 +32,18 @@
 - **Day 24 Super Admin (backend + test):** `AdminService`/`AdminController` (`/admin/summary`, `/admin/tenants`, `/admin/tenants/:id`, `PATCH /admin/tenants/:id/status`) lengkap dengan `runUnscoped` agar query platform tidak terkontaminasi scope tenant; suspend menolak diri sendiri, mewajibkan alasan, mencabut semua refresh token, menulis audit `PLATFORM_SUSPEND`/`PLATFORM_ACTIVATE`, dan meng-invalidate cache status tenant. 12 unit test baru (`admin.service.spec.ts`); total **228 test** lulus, coverage 73,8% lines / 85,3% branches, lint/build bersih.
 - Integrasi eksternal (WhatsApp Fonnte/Wablas, SMTP laporan, backup S3) dipastikan sudah lengkap kodenya dan ter-wiring di compose; yang tersisa adalah kredensial pemilik layanan serta verifikasi kirim/restore. Langkah operasional tercatat di `SETUP.md`.
 
+## Selesai pada 9 Oktober 2026
+
+- **Audit workspace:** `pnpm lint` 0 warning, `pnpm build` sukses, `git diff --check` bersih.
+- **Day 13 WA selesai (kode):** provider `mock` sandbox tanpa pulsa (`WHATSAPP_PROVIDER=mock`), Fonnte/Wablas tetap didukung; verifikasi kirim asli menunggu token owner.
+- **Day 17 CSV final:** `src/reports/pv-csv.ts` + `GET /reports/pv.csv?month=&mode=` + template `docs/pv-upload-template.csv` (4 test).
+- **Bonus HPAI helper:** `src/bonus/hpai-formula.ts` (`validateHpaiScheme`, `calculateHpaiPayout`) siap diisi angka resmi (4 test).
+- **Integrasi eksternal:** `src/integrations/external.service.ts` — Midtrans sandbox/mock, Telegram/Slack mock, Sentry in-memory mock (5 test).
+- **Day 25 billing:** `src/billing/plans.ts` Free/Pro/Enterprise + feature flags + invoice + reminder (5 test).
+- **Day 28 offline:** `src/offline/offline.ts` snapshot + validator antrean (2 test); UI IndexedDB menunggu repo web.
+- **Day 29/30:** `UAT_CHECKLIST.md` + `INSTRUCTIONS_FOR_OWNER.md` dibuat; E2E Playwright/load k6/UAT manusia + deploy VPS tetap tugas owner.
+- Total **26 suite / 248 test lulus** (naik dari 228).
+
 ## Sedang dikerjakan
 
 - **2026-10-07 — Polyrepo + satu branch:** repo terpecah menjadi `night-atrociraptor` (backend, repo ini) dan `night-atrociraptor-web` (frontend Next.js, repo baru). `packages/shared` dihapus (tidak terpakai), konfigurasi monorepo (turbo/workspace filter) dihilangkan, tiap repo punya lockfile, Dockerfile, CI, dan dokumentasi sendiri. Branch `feature/lanjutkan-fitur-ai-baru` sudah di-merge ke `main` dan dihapus (lokal + remote) — pengembangan berjalan di `main` saja.

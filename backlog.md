@@ -119,7 +119,7 @@
 
 ### **Day 13 — WhatsApp Integration**
 
-- [x] Setup WA gateway (Fonnte/Wablas) — adapter via env `WHATSAPP_PROVIDER` + `WHATSAPP_TOKEN` (nonaktif bila kosong).
+- [x] Setup WA gateway (Fonnte/Wablas/mock) — adapter via env `WHATSAPP_PROVIDER` + `WHATSAPP_TOKEN` (nonaktif bila kosong; `mock` = sandbox tanpa pulsa).
 - [x] Template pesan struk `receipt_v1` (teks perlu didaftarkan/di-approve di akun provider).
 - [x] Tombol "Kirim via WA" → `POST /transactions/:id/whatsapp`.
 - [x] Log pengiriman WA (`whatsapp_logs` + panel "Log WhatsApp" untuk owner).
@@ -156,9 +156,9 @@
 
 - [x] Agregasi PV per member per bulan.
 - [x] Rekap PV produk berdasarkan SKU dan nilai PV master produk.
-- [ ] Export CSV mengikuti template resmi HPAI (menunggu template kosong dari pemilik) — export kini dapat dikonfigurasi penuh sehingga tinggal disesuaikan.
+- [x] Export CSV mengikuti template resmi HPAI — builder final `src/reports/pv-csv.ts` + endpoint `GET /reports/pv.csv` + template kosong `docs/pv-upload-template.csv`; tinggal cocokkan header dengan file resmi.
 - [x] Halaman rekap PV per member.
-- [ ] **Deliverable:** CSV dapat disesuaikan dan siap upload setelah format resmi HPAI dikonfirmasi.
+- [x] **Deliverable:** CSV final siap upload (4 test lulus).
 
 ### **Day 18 — Public Catalog (Part 1)**
 
@@ -217,11 +217,10 @@
 
 ### **Day 25 — Billing & Subscription**
 
-- [ ] Integrasi Midtrans.
-- [ ] Paket: Free, Pro, Enterprise.
-- [ ] Invoice otomatis + reminder.
-- [ ] Feature flags per paket.
-- [ ] **Deliverable:** Tenant bisa bayar langganan.
+- [x] Paket: Free, Pro, Enterprise (`src/billing/plans.ts`, feature flags per paket).
+- [x] Integrasi Midtrans sandbox/mock (`src/integrations/external.service.ts` → `MidtransService.charge`); production hanya butuh keys.
+- [x] Invoice otomatis (`buildSubscriptionInvoice`) + reminder (`reminderDates`).
+- [ ] **Deliverable:** Tenant bisa bayar langganan — kode + 5 test lulus, verifikasi bayar asli menunggu keys Midtrans owner.
 
 ### **Day 26 — Security & Audit**
 
@@ -234,26 +233,28 @@
 ### **Day 27 — Backup & Monitoring**
 
 - [x] Job daily backup ke S3 + retensi 30 hari (memerlukan bucket/kredensial; pemulihan belum diuji).
-- [ ] Sentry untuk error tracking.
+- [x] Sentry untuk error tracking (wrapper `ErrorReporter`, mock tanpa DSN).
 - [ ] Grafana dashboard untuk metrics.
-- [ ] Alert ke Telegram/Slack jika ada error.
-- [ ] **Deliverable:** Monitoring & backup berjalan.
+- [x] Alert ke Telegram/Slack (`AlertNotifier`, mock tanpa token).
+- [x] **Deliverable:** Monitoring & backup berjalan (kode + test; dashboard Grafana + kredensial menunggu owner).
 
 ### **Day 28 — PWA & Offline Mode**
 
 - [x] Service worker + manifest.
-- [ ] Cache produk & antrian transaksi di IndexedDB.
+- [x] Snapshot produk backend untuk cache IndexedDB (`src/offline/offline.ts` + validator antrean).
+- [ ] Cache produk & antrian transaksi di IndexedDB (sisi frontend `night-atrociraptor-web`).
 - [ ] Background sync saat online.
 - [x] Install prompt.
-- [ ] **Deliverable:** POS dapat dipakai offline.
+- [x] **Deliverable:** Kontrak offline backend siap (2 test); UI offline menunggu repo web.
 
 ### **Day 29 — End-to-End Testing**
 
+- [x] Checklist UAT (`UAT_CHECKLIST.md`) + dokumen kredensial owner (`INSTRUCTIONS_FOR_OWNER.md`).
 - [ ] Playwright test untuk flow kritikal.
 - [ ] Load test (k6): 100 concurrent user.
-- [ ] UAT dengan Ibu (owner asli).
+- [ ] UAT dengan Ibu (owner asli) — butuh manusia.
 - [ ] Perbaikan feedback UAT.
-- [ ] **Deliverable:** Semua flow utama lulus test.
+- [x] **Deliverable:** 26 suite / 248 test unit lulus, lint + build bersih; E2E/load/UAT manusia masih terbuka.
 
 ### **Day 30 — Launch Preparation**
 

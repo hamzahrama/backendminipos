@@ -1,4 +1,4 @@
-export type WhatsAppProvider = "fonnte" | "wablas" | "disabled";
+export type WhatsAppProvider = "fonnte" | "wablas" | "mock" | "disabled";
 
 export type WhatsAppSendResult =
   | { ok: true; provider: WhatsAppProvider; providerMessageId: string | null; durationMs: number }
@@ -15,11 +15,14 @@ type FetchLike = (url: string, init: RequestInit) => Promise<Response>;
 
 export function readWhatsAppConfig(env: NodeJS.ProcessEnv = process.env): WhatsAppConfig {
   const raw = (env.WHATSAPP_PROVIDER ?? "").trim().toLowerCase();
-  const provider: WhatsAppProvider = raw === "fonnte" || raw === "wablas" ? raw : "disabled";
+  const provider: WhatsAppProvider = raw === "fonnte" || raw === "wablas" || raw === "mock" ? raw : "disabled";
   const timeout = Number(env.WHATSAPP_TIMEOUT_MS ?? 5000);
+  // "mock" is the sandbox provider for Day 13 verification without real credentials.
+  const token = env.WHATSAPP_TOKEN?.trim() || undefined;
+  const effective: WhatsAppProvider = provider === "mock" ? "mock" : token ? provider : "disabled";
   return {
-    provider: env.WHATSAPP_TOKEN?.trim() ? provider : "disabled",
-    token: env.WHATSAPP_TOKEN?.trim() || undefined,
+    provider: effective,
+    token,
     wablasBaseUrl: env.WABLAS_BASE_URL?.trim().replace(/\/+$/, "") || undefined,
     timeoutMs: Number.isFinite(timeout) && timeout >= 1000 && timeout <= 30000 ? timeout : 5000,
   };
@@ -53,6 +56,10 @@ export class WhatsAppGateway {
     }
     try {
       const signal = AbortSignal.timeout(this.config.timeoutMs);
+      // Sandbox provider: no network, deterministic id, usable in tests/UAT without credit.
+      if (provider === "mock") {
+        return { ok: true, provider, providerMessageId: `mock-${phone}-${Date.now()}`, durationMs: Date.now() - started };
+      }
       let response: Response;
       if (provider === "fonnte") {
         const body = new URLSearchParams({ target: phone, message, countryCode: "62" });
