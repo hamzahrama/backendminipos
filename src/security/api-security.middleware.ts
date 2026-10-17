@@ -22,7 +22,7 @@ export class ApiSecurityMiddleware implements NestMiddleware {
     response.setHeader("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
     if (process.env.NODE_ENV === "production") response.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
 
-    const pathname = request.path.split("?")[0];
+    const pathname = (request.originalUrl ?? request.path).split("?")[0];
     const family = pathname.startsWith("/auth/") ? pathname.split("/").slice(0, 3).join("/") : `/${pathname.split("/")[1] ?? ""}`;
     const max = family === "/auth/login" || family === "/auth/register-tenant" ? 10 : family === "/transactions" ? 30 : 120;
     const key = `${request.ip}:${family}`;
