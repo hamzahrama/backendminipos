@@ -24,7 +24,7 @@ async function bootstrap() {
       return callback(new Error("Origin tidak diizinkan."), false);
     },
     methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "x-tenant-id"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-tenant-id", "Idempotency-Key"],
     maxAge: 600,
   });
   app.useGlobalPipes(
