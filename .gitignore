@@ -11,3 +11,4 @@ coverage/
 *.log
 .DS_Store
 dist
+Projectke2.code-workspace
