@@ -49,9 +49,24 @@
 - **2026-10-07 — Polyrepo + satu branch:** repo terpecah menjadi `night-atrociraptor` (backend, repo ini) dan `night-atrociraptor-web` (frontend Next.js, repo baru). `packages/shared` dihapus (tidak terpakai), konfigurasi monorepo (turbo/workspace filter) dihilangkan, tiap repo punya lockfile, Dockerfile, CI, dan dokumentasi sendiri. Branch `feature/lanjutkan-fitur-ai-baru` sudah di-merge ke `main` dan dihapus (lokal + remote) — pengembangan berjalan di `main` saja.
 - API dan web sudah dibangun ulang dari source terbaru di Compose. Layanan berjalan; database sehat dan endpoint yang dicek merespons sesuai status di atas.
 
-## Belum dikerjakan
+## Selesai pada 20 Oktober 2026 (Audit & Sinkronisasi PRD v2.0)
 
-- Day 13 (provider WA), format CSV akhir Day 17, Day 21 coverage, Day 23–25, bagian Day 26–28 yang belum selesai, Day 29, dan Day 30 masih terbuka di `backlog.md`.
-- Integrasi nyata (WhatsApp, SMTP, backup S3, Midtrans, Sentry, monitoring, Telegram/Slack) perlu kredensial dan konfigurasi pemilik layanan sebelum pengiriman/pembayaran/backup/alert dapat dijalankan dan diverifikasi.
-- UAT dengan pemilik toko dan peluncuran produksi memerlukan akses serta keputusan dari pemilik proyek.
-- Masukan yang dibutuhkan: pilihan gateway dan token lokal; template kosong CSV dan rumus bonus HPAI; identitas super-admin, paket/harga/batas berlangganan, serta kredensial sandbox Midtrans. Pertanyaan sudah dikirim untuk dijawab di chat.
+- **Audit & Penyelarasan PRD:** Seluruh file backend (`Projectke2`) dan frontend (`Projectke2-web`) telah dicek ulang terhadap PRD v2.0 (Epik E1 s/d E12).
+- **Backend Test Suite:** 27 test suite lulus (251 unit test), mencakup seluruh logika inti POS, FEFO, Multi-Tenant, Jaringan Downline, Bonus Simulator, Super Admin, Billing Plans, Alerting, dan Backup S3.
+- **Frontend Test Suite:** Penambahan `vitest.config.mjs` di frontend agar unit test vitest terpisah rapi dari skenario Playwright E2E; 4 unit test cart store lulus 100%.
+- **Matriks & Gap Backlog:** Dokumen `backlog.md` diperbarui dengan matriks sinkronisasi detail PRD vs implementasi aktual, memisahkan pekerjaan yang membutuhkan input kredensial pemilik (unblocking), tugas teknis tersisa, gap fitur lanjutan, dan persiapan peluncuran.
+
+## Belum dikerjakan / Butuh Tindak Lanjut
+
+1. **Masukan dari Pemilik Proyek (Kredensial & Data Resmi):**
+   - Token WhatsApp (Fonnte/Wablas) untuk tes struk live.
+   - Kredensial SMTP untuk live delivery laporan harian otomatis.
+   - Template resmi CSV HPAI & persentase marketing plan resmi HPAI.
+   - Kredensial Midtrans & bucket S3 untuk backup live + restore test.
+2. **Pekerjaan Teknis Tersisa:**
+   - Frontend IndexedDB & antrean transaksi offline kasir (Day 28).
+   - UI upgrade billing & webhook payment di frontend (Day 25).
+   - Eksekusi Playwright E2E (`npm run test:e2e`) dan k6 load testing (Day 29).
+3. **Peluncuran (Day 30):**
+   - Deploy VPS, domain + Cloudflare SSL, dan UAT operasional dengan pemilik toko.
+

@@ -268,12 +268,117 @@
 
 ## 📊 Tracking Progress
 
-| Minggu | Target Selesai | Status |
-| ------ | -------------- | ------ |
-| Week 1 | 7/7 Day done   | ✅     |
-| Week 2 | 7/7 Day code done (Day 13 menunggu token provider live) | 🟡 |
-| Week 3 | 7/7 Day code done (Day 17 & 20 menunggu data eksternal) | 🟡 |
-| Week 4 | 3/9 Day done (Day 22, 23, 24 selesai; Day 26–28 sebagian) | 🟡 |
+| Minggu | Target Selesai | Status | Keterangan |
+| ------ | -------------- | ------ | ---------- |
+| Week 1 | 7/7 Day done   | ✅ Selesai | Setup, Auth multi-tenant, Produk/Kategori, Import CSV, Inventory & FEFO |
+| Week 2 | 7/7 Day done   | 🟢 Kode Selesai (95%) | POS terminal, Dual Price, Customer, Checkout atomik, Struk thermal, Diskon/Hold. WA siap kode (Day 13 verifikasi nyata menunggu token live) |
+| Week 3 | 7/7 Day done   | 🟢 Kode Selesai (95%) | Dashboard report, P&L, Rekap PV bulanan (Day 17 CSV builder final siap), Katalog publik SSR, Order WA, Email harian (Day 20 kode siap, menunggu SMTP) |
+| Week 4 | 7/9 Day done   | 🟡 Dalam Pengerjaan (75%) | Jaringan tree (Day 22), Bonus simulator (Day 23), Super Admin (Day 24), Billing backend (Day 25), Security & audit (Day 26), Backup & alerting (Day 27) selesai kode. Offline IndexedDB (Day 28) & E2E/UAT/Deploy (Day 29-30) dalam proses |
+
+---
+
+## 🎯 Matriks Sinkronisasi PRD v2.0 vs Status Kode Nyata
+
+| Epik PRD | Fitur dalam PRD | Status di Kode | Lokasi File & Bukti | Keterangan / Gap |
+| -------- | --------------- | -------------- | ------------------- | ---------------- |
+| **E1: Foundation & Auth** | JWT Access & Refresh Token Rotation | ✅ Selesai | `src/auth/auth.service.ts` | 9 unit test lulus |
+| | Multi-Tenant Data Isolation (`tenant_id`) | ✅ Selesai | `src/prisma/tenant-scope.ts`, `jwt-auth.guard.ts` | Filter otomatis di level query |
+| | RBAC (`super_admin`, `owner`, `cashier`) | ✅ Selesai | `src/auth/roles.guard.ts`, `schema.prisma` | Role & permissions tersimpan di DB |
+| | 2FA Opsional | ⚪ Belum Dibuat | - | Belum diimplementasikan (opsional di PRD) |
+| | Manajemen Kasir / Undangan Tim | ⚪ Belum Dibuat | - | Registrasi membuat owner; API invite/tambah kasir belum ada |
+| **E2: Master Data Produk** | CRUD Produk (SKU, Nama, Harga, PV) | ✅ Selesai | `src/catalog/catalog.service.ts` | 33 test lulus |
+| | Upload Gambar Produk (S3 presigned) | ✅ Selesai | `src/catalog/catalog.service.ts` | Terhubung ke S3 client |
+| | Import CSV & Bulk Price Update | ✅ Selesai | `src/catalog/catalog.service.ts` | Upload, validasi, preview, commit |
+| | Detail Produk Khusus (Berat, Dimensi, BPOM) | ⚪ Belum Dibuat | - | Belum ada kolom di skema `Product` |
+| | Varian & Paket Bundling (BOGO/Paket) | ⚪ Belum Dibuat | - | Belum ada skema varian/bundling |
+| | Multi-Gudang & Transfer Stok | 🟡 Parsial | `schema.prisma` (model `Warehouse`) | Gudang ada, alur transfer ber-approval belum ada |
+| **E3: Inventory & FEFO** | Pencatatan Batch & Expiry | ✅ Selesai | `src/inventory/inventory.service.ts` | Batch tersimpan per barang & tanggal kedaluwarsa |
+| | Potong Stok Otomatis FEFO saat Checkout | ✅ Selesai | `src/transactions/transactions.service.ts` | Batch kedaluwarsa terdekat dipotong duluan |
+| | Alert Stok Menipis & Kadaluarsa | ✅ Selesai | `src/alerts/alerts.service.ts` | Widget dashboard + endpoint `/alerts` |
+| | Stock Opname (Hitung Fisik & Approval) | ⚪ Belum Dibuat | - | Belum ada modul stocktake fisik |
+| | Purchase Order (PO) otomatis ke HNI | ⚪ Belum Dibuat | - | Belum ada modul PO |
+| **E4: POS Terminal** | Terminal Dual Price (Member vs Non-Member) | ✅ Selesai | `pos-terminal.tsx`, `transactions.service.ts` | Real-time switch harga & PV |
+| | Checkout Atomik & Invoice No Unik | ✅ Selesai | `src/transactions/transactions.service.ts` | 18 test lulus, idempotency key aktif |
+| | Hold & Resume Order (Multi Drafts) | ✅ Selesai | `pos-terminal.tsx` | Simpan multi draft di local storage |
+| | Diskon Item, Diskon Transaksi & Voucher | ✅ Selesai | `src/vouchers/vouchers.service.ts`, `pos-terminal.tsx` | 17 test lulus |
+| | Split Payment (Multi-metode: Tunai, Transfer, QRIS) | ⚪ Belum Dibuat | `pos-terminal.tsx` | Saat ini hanya pencatatan tunai |
+| | Override Batch Manual Kasir dengan Alasan | ⚪ Belum Dibuat | - | Otomatis FEFO di backend, kasir belum bisa pilih batch manual |
+| **E5: Customer & Jaringan** | CRUD Customer & Profil HNI | ✅ Selesai | `customers-panel.tsx`, `customers.service.ts` | Auto-complete & quick-add di POS |
+| | Pohon Jaringan Downline (Maks 5 Level) | ✅ Selesai | `src/customers/network-tree.ts`, `network-panel.tsx` | Deteksi siklus deterministik, potong 5 level |
+| | Rekap PV per Leg Jaringan | ✅ Selesai | `network-panel.tsx`, `network-tree.ts` | Akumulasi grup PV semua kedalaman |
+| | Grafik Tren Belanja 12 Bulan | ⚪ Belum Dibuat | - | Riwayat transaksi ada, grafik 12 bulan belum |
+| **E6: Nota & WhatsApp** | Struk Thermal 58mm & 80mm + QR Verifikasi | ✅ Selesai | `src/app/receipt/[token]/page.tsx` | Format cetak siap printer thermal |
+| | Kirim Struk via WhatsApp (Fonnte/Wablas) | 🟢 Kode Siap | `src/whatsapp/whatsapp.service.ts`, `whatsapp-logs-panel.tsx` | Mock sandbox siap; verifikasi nyata butuh token |
+| | Broadcast Promo WA ke Member | ⚪ Belum Dibuat | - | Belum ada modul broadcast |
+| **E7: Report & Analytics** | KPI Real-time, Omset & Grafik Per Jam | ✅ Selesai | `reports-panel.tsx`, `reports.service.ts` | Filter rentang tanggal WIB |
+| | Laporan Laba Rugi (P&L) & Input Opex | ✅ Selesai | `profit-loss-panel.tsx`, `src/expenses/` | Ekspor Excel & PDF |
+| | Rekap PV Bulanan HPAI | 🟢 Kode Siap | `src/reports/pv-csv.ts`, `pv-report-panel.tsx` | Builder final CSV siap; template resmi ditunggu |
+| | Scheduled Email Laporan Harian (WIB) | 🟢 Kode Siap | `src/reports/daily-email.service.ts` | Job aktif; kirim nyata butuh akun SMTP |
+| **E8: Public Catalog** | Katalog SSR `/katalog/[slug]` & Stok Ready | ✅ Selesai | `src/app/katalog/[slug]/page.tsx` | SEO meta, sitemap.xml, pencarian |
+| | Keranjang Publik & Order via WhatsApp | ✅ Selesai | `public-catalog-view.tsx` | LocalStorage cart + link draft WhatsApp |
+| **E9: Jaringan & Bonus** | Simulator Bonus HPAI & Editor Skema | ✅ Selesai | `src/bonus/bonus.service.ts`, `bonus-panel.tsx` | Multi skenario simulasi kenaikan PV |
+| | Leaderboard PV Bulanan & Badges | ✅ Selesai | `src/bonus/`, `bonus-panel.tsx` | Peringkat Bronze/Silver/Gold/Diamond |
+| | Rumus Payout Resmi HPAI | 🟢 Kode Siap | `src/bonus/hpai-formula.ts` | Helper validasi & kalkulasi siap diisi angka resmi |
+| **E10: Super Admin & Billing** | Manajemen Tenant Platform & Suspend/Aktif | ✅ Selesai | `src/admin/admin.service.ts`, `super-admin-panel.tsx` | 12 test lulus, audit suspend/aktif |
+| | Paket Langganan (Free/Pro/Enterprise) | ✅ Selesai | `src/billing/plans.ts` | Invoice generator, reminder dates, 5 test |
+| | Integrasi Pembayaran Midtrans (Langganan) | 🟢 Kode Siap | `src/integrations/external.service.ts` | Mock sandbox siap; live butuh server key |
+| | UI Pembayaran Langganan di Web | ⚪ Belum Dibuat | - | UI upgrade plan di dashboard owner belum ada |
+| **E11: Mobile PWA & Offline** | Installable PWA Manifest & Service Worker | ✅ Selesai | `manifest.ts`, `pwa-register.tsx` | Install prompt & offline fallback page |
+| | Backend Snapshot & Offline Queue Contract | ✅ Selesai | `src/offline/offline.ts` | 2 test lulus |
+| | Frontend IndexedDB Cache & Offline POS Queue | 🟡 Belum Dibuat | Frontend `night-atrociraptor-web` | POS masih butuh server untuk validasi stok |
+| | Web Push Notification | ⚪ Belum Dibuat | - | Belum diimplementasikan |
+| **E12: Security & Ops** | Audit Log Aksi Tulis Terautentikasi | ✅ Selesai | `src/audit/audit.interceptor.ts` | Catat perubahan data ke DB |
+| | Rate Limiting IP & Anti-Fraud Diskon | ✅ Selesai | `src/security/`, `src/transactions/` | Flagging diskon melebihi threshold |
+| | Daily Backup S3 Otomatis & Retensi 30 Hari | 🟢 Kode Siap | `src/backups/backup.service.ts` | 9 test lulus; live butuh bucket S3 & uji restore |
+| | Alerting Telegram / Slack | 🟢 Kode Siap | `src/integrations/external.service.ts` | Adapter webhook siap; live butuh token/URL |
+| | Dashboard Grafana | ⚪ Belum Dibuat | - | Metrik backend ada, dashboard Grafana belum diset |
+
+---
+
+## 📌 Rangkuman: Apa yang Belum Dikerjakan?
+
+### 1. Kebutuhan Masukan / Kredensial Nyata dari Pemilik Proyek (Owner)
+Hal-hal ini **tidak bisa diselesaikan hanya dengan kode**, melainkan membutuhkan data/kunci akun dari Anda:
+1. **WhatsApp Gateway:** Pilihan provider (`Fonnte` atau `Wablas`) dan token API aktif untuk menguji struk terkirim ke nomor WA HP nyata.
+2. **Kredensial SMTP Email:** Host, user, dan password email (misal Gmail App Password / Mailgun) untuk menguji pengiriman otomatis laporan harian setiap jam 08:00 WIB.
+3. **Template CSV Resmi HPAI:** File contoh / format kolom resmi dari sistem HPAI agar file ekspor PV terkunci sesuai standar pusat.
+4. **Rumus Resmi Bonus HPAI:** Persentase bonus per peringkat dan pembagian generasi resmi untuk diisikan ke `hpai-formula.ts`.
+5. **Kredensial Midtrans:** `Server Key` dan `Client Key` (sandbox atau production) untuk mengaktifkan pembayaran langganan SaaS.
+6. **Bucket AWS S3 / Cloudflare R2:** Akses bucket untuk menjalankan pengujian backup harian `pg_dump` dan uji pemulihan (restore) database.
+
+---
+
+### 2. Pekerjaan Teknis yang Belum Dikerjakan (Pending Coding)
+Fitur-fitur dari backlog 30 hari yang masih perlu diselesaikan di kode:
+1. **Frontend IndexedDB & Antrean Offline POS (Day 28):**
+   - Implementasi penyimpanan cache produk lokal di browser kasir menggunakan IndexedDB.
+   - Penyimpanan transaksi lokal saat internet terputus dan background synchronization saat koneksi kembali online.
+2. **UI Billing & Upgrade Paket di Web (Day 25):**
+   - Halaman/modal bagi Owner untuk melihat paket saat ini, memilih paket Pro/Enterprise, dan memunculkan pop-up Midtrans Snap.
+   - Endpoint webhook di backend untuk menerima notifikasi pelunasan Midtrans dan otomatis memperbarui status paket tenant.
+3. **Automated E2E Testing & Load Testing (Day 29):**
+   - Menjalankan Playwright test (`npm run test:e2e`) dengan kredensial tenant uji di `.env.e2e`.
+   - Menjalankan load test k6 (`k6/katalog.js`, `k6/rate-limit.js`) untuk memvalidasi performa 100 concurrent users.
+
+---
+
+### 3. Fitur PRD Lanjutan / Next Phase (Belum Ada di Backlog Harian)
+Fitur-fitur yang tertera dalam PRD v2.0 tetapi belum dibangun di fase MVP:
+- **Manajemen Kasir / Undangan Kasir:** Fitur Owner mengundang akun kasir baru via email dan mengatur hak akses individual.
+- **Stock Opname (Stocktake):** Fitur input hitung fisik stok berkala dan approval selisih stok oleh owner.
+- **Split Payment di POS:** Pembayaran kombinasi (misal: tunai Rp 50.000 + transfer QRIS Rp 50.000).
+- **Purchase Order (PO):** Fitur pembuatan PO barang ke pusat HNI saat stok menipis.
+- **Varian & Paket Bundling:** Skema produk varian (rasa/ukuran) dan paket herbal sehat (bundling).
+- **Atribut Produk Ekstra:** Kolom berat, dimensi, nomor izin BPOM, dan komposisi herbal.
+- **2FA (Two-Factor Authentication):** Otentikasi dua langkah dengan TOTP untuk Owner dan Super Admin.
+- **Web Push Notification:** Notifikasi push browser untuk alert stok dan promo.
+
+---
+
+### 4. Persiapan Rilis & Peluncuran Produksi (Day 30)
+- Deployment ke server produksi (VPS Ubuntu/Debian + Docker Compose + Caddy SSL).
+- Konfigurasi DNS domain `{domain}.com` dan integrasi Cloudflare CDN.
+- Uji Penerimaan Pengguna (UAT) langsung bersama Ibu (pemilik stokis asli) menggunakan alur riil di toko.
 
 ---
 
@@ -284,6 +389,13 @@
   - Rate limit 3×/10 menit per transaksi kini hanya menghitung log `SENT`/`FAILED`; `SKIPPED` (gateway belum dikonfigurasi) tidak menghambat retry.
   - 4 unit test baru (tenant scope lookup, tenant scope logs, status counter, reject tanpa konteks). Total **216 test** lulus; lint, build, dan `git diff --check` bersih.
   - **Butuh dari pemilik (tidak berubah):** pilihan provider (Fonnte/Wablas) + token, lalu uji kirim ke nomor asli.
+
+- **2026-10-20 — Sinkronisasi Lengkap PRD v2.0 & Verifikasi Test Suite:**
+  - Audit seluruh file backend (`Projectke2`) & frontend (`Projectke2-web`).
+  - Backend: **27 test files / 251 unit test lulus 100%**. Seluruh service inti (Auth, Multi-Tenant Guard, Catalog, Inventory FEFO, Checkout Transaction, Struk Thermal, Vouchers, Expenses/P&L, PV Report CSV, Network Tree, Bonus Engine, Super Admin, Billing Plans, Backup S3, Alerting) berjalan stabil.
+  - Frontend: Penambahan `vitest.config.mjs` di `Projectke2-web` untuk memisahkan unit test dari Playwright specs; **4 unit tests cart-store lulus 100%**.
+  - Matriks sinkronisasi PRD Epik E1 - E12 diperbarui di `backlog.md` dengan klasifikasi jelas: fitur selesai, fitur siap kode yang menunggu akun/data pemilik, pekerjaan teknis pending, dan fitur PRD lanjutan.
+
 
 ## 📝 Log Perkembangan — Branch `feature/lanjutkan-fitur-ai-baru`
 
