@@ -1,0 +1,11 @@
+name,sku,memberPrice,retailPrice,barcode,description,category,pv
+Sabun Mandi Lux 100g,SM-LUX-100G,1000,1200,8990000000011,Produk Sabun Mandi Lux 100g,Sabun Mandi,2
+Sabun Mandi Lifebuoy 100g,SM-LIFE-100G,1000,1200,8990000000012,Produk Sabun Mandi Lifebuoy 100g,Sabun Mandi,2
+Odol Pepsodent 100g,OD-PEP-100G,1000,1200,8990000000013,Produk Odol Pepsodent 100g,Odol,2
+Kopi Nescafe 250g,KO-NES-250G,1000,1200,8990000000014,Produk Kopi Nescafe 250g,Kopi,2   
+Indomie Goreng Spesial,IND-GOR-SPEC,1000,1200,8990000000015,Produk Indomie Goreng Spesial,Indomie,2
+Indomie Soto Ayam,IND-SOT-AYAM,1000,1200,8990000000016,Produk Indomie Soto Ayam,Indomie,2
+Indomie Kari Ayam,IND-KAR-AYAM,1000,1200,8990000000017,Produk Indomie Kari Ayam,Indomie,2
+Indomie Ayam Bawang,IND-AYB-100G,1000,1200,8990000000018,Produk Indomie Ayam Bawang,Indomie,2
+Indomie Goreng Pedas,IND-GOR-PED,1000,1200,8990000000019,Produk Indomie Goreng Pedas,Indomie,2
+Indomie Goreng Iga Sapi,IND-GOR-IGS,1000,1200,8990000000020,Produk Indomie Goreng Iga Sapi,Indomie,2
