@@ -21,9 +21,11 @@ import { BackupModule } from "./backups/backup.module";
 import { WhatsAppModule } from "./whatsapp/whatsapp.module";
 import { BonusModule } from "./bonus/bonus.module";
 import { AdminModule } from "./admin/admin.module";
+import { BillingModule } from "./billing/billing.module";
+import { OfflineModule } from "./offline/offline.module";
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), ScheduleModule.forRoot(), PrismaModule, AuthModule, CatalogModule, InventoryModule, AlertsModule, CustomersModule, VouchersModule, TransactionsModule, ReportsModule, ExpensesModule, PublicCatalogModule, BackupModule, WhatsAppModule, BonusModule, AdminModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), ScheduleModule.forRoot(), PrismaModule, AuthModule, CatalogModule, InventoryModule, AlertsModule, CustomersModule, VouchersModule, TransactionsModule, ReportsModule, ExpensesModule, PublicCatalogModule, BackupModule, WhatsAppModule, BonusModule, AdminModule, BillingModule, OfflineModule],
   controllers: [AppController, AuditController], providers: [{ provide: APP_INTERCEPTOR, useClass: AuditInterceptor }],
 })
 export class AppModule implements NestModule {

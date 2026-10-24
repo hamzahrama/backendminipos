@@ -41,6 +41,7 @@ model Tenant {
   whatsAppLogs         WhatsAppLog[]
   networkNodes         NetworkNode[]
   bonusScheme          BonusScheme?
+  subscription         Subscription?
 
   @@map("tenants")
 }
@@ -498,4 +499,23 @@ model BonusScheme {
   tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@map("bonus_schemes")
+}
+
+/// Subscription & billing (Day 25). Tracks tenant's current plan and payment status.
+model Subscription {
+  id                  String   @id @default(cuid())
+  tenantId            String   @unique @map("tenant_id")
+  planCode            String   @default("FREE") @map("plan_code") // FREE|PRO|ENTERPRISE
+  status              String   @default("ACTIVE") // ACTIVE|SUSPENDED|CANCELLED
+  currentPeriodStart  DateTime @map("current_period_start")
+  currentPeriodEnd    DateTime @map("current_period_end")
+  nextBillingDate     DateTime? @map("next_billing_date")
+  lastPaymentAt       DateTime? @map("last_payment_at")
+  invoiceNumber       String?  @map("invoice_number")
+  midtransOrderId     String?  @unique @map("midtrans_order_id")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+  tenant              Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
 }
