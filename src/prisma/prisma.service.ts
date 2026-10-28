@@ -25,7 +25,16 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         args: scopePrismaQuery(params.model, params.action, params.args ?? {}, tenantId),
       });
     });
-    await this.$connect();
+    
+    // Lazy connect: only connect on first query, not at bootstrap
+    try {
+      await Promise.race([
+        this.$connect(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("DB connection timeout")), 5000))
+      ]);
+    } catch (err) {
+      console.warn("Prisma connection deferred (will retry on first query):", (err as Error).message);
+    }
   }
 
   async onModuleDestroy() {
