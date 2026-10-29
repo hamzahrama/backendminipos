@@ -12,3 +12,5 @@ coverage/
 .DS_Store
 dist
 Projectke2.code-workspace
+.vercel
+.env*
