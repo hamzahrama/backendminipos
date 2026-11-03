@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { TenantContextService } from "../tenant/tenant-context.service";
 import { scopePrismaQuery } from "./tenant-scope";
 

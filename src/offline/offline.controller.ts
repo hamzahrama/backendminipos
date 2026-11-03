@@ -9,7 +9,7 @@ export class OfflineController {
 
   @Get("snapshot")
   async getSnapshot(@Req() req: any) {
-    const tenantId = req.user?.tenant?.id;
+    const tenantId = req.user?.tenantId || req.user?.tenant?.id;
     if (!tenantId) return { error: "Tenant tidak ditemukan" };
     return this.offline.getProductSnapshot(tenantId);
   }

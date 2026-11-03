@@ -84,76 +84,76 @@ export class AuthService {
     const passwordHash = await hash(dto.password, 12);
 
     try {
-      const identity = await this.prisma.$transaction(async (tx) => {
-        const tenant = await tx.tenant.create({
-          data: {
-            name: dto.tenantName.trim(),
-            slug: await this.createTenantSlug(dto.tenantName, tx),
-          },
+      const permissionIds: Map<string, string> = new Map();
+      for (const permission of PERMISSIONS) {
+        const permissionRecord = await this.prisma.permission.upsert({
+          where: { code: permission.code },
+          update: {},
+          create: permission,
         });
+        permissionIds.set(permission.code, permissionRecord.id);
+      }
 
-        const permissionRecords = await Promise.all(
-          PERMISSIONS.map((permission) =>
-            tx.permission.upsert({
-              where: { code: permission.code },
-              update: {},
-              create: permission,
-            }),
-          ),
-        );
-        const permissionIds = new Map(
-          permissionRecords.map((permission) => [permission.code, permission.id]),
-        );
-
-        let ownerRole: Role | undefined;
-        for (const definition of ROLE_DEFINITIONS) {
-          const role = await tx.role.create({
+      const identity = await this.prisma.$transaction(
+        async (tx) => {
+          const tenant = await tx.tenant.create({
             data: {
-              tenantId: tenant.id,
-              code: definition.code,
-              name: definition.name,
+              name: dto.tenantName.trim(),
+              slug: await this.createTenantSlug(dto.tenantName, tx),
             },
           });
 
-          await tx.rolePermission.createMany({
-            data: definition.permissions.map((code) => ({
-              roleId: role.id,
-              permissionId: permissionIds.get(code)!,
-            })),
+          let ownerRole: Role | undefined;
+          for (const definition of ROLE_DEFINITIONS) {
+            const role = await tx.role.create({
+              data: {
+                tenantId: tenant.id,
+                code: definition.code,
+                name: definition.name,
+              },
+            });
+
+            await tx.rolePermission.createMany({
+              data: definition.permissions.map((code) => ({
+                roleId: role.id,
+                permissionId: permissionIds.get(code)!,
+              })),
+            });
+
+            if (definition.code === "owner") ownerRole = role;
+          }
+
+          if (!ownerRole) throw new Error("Role owner tidak berhasil dibuat.");
+
+          const user = await tx.user.create({
+            data: {
+              name: dto.ownerName.trim(),
+              email,
+              passwordHash,
+            },
           });
 
-          if (definition.code === "owner") ownerRole = role;
-        }
+          await tx.userTenant.create({
+            data: {
+              userId: user.id,
+              tenantId: tenant.id,
+              roleId: ownerRole.id,
+            },
+          });
 
-        const user = await tx.user.create({
-          data: {
-            name: dto.ownerName.trim(),
-            email,
-            passwordHash,
-          },
-        });
-
-        if (!ownerRole) throw new Error("Role owner tidak berhasil dibuat.");
-
-        await tx.userTenant.create({
-          data: {
-            userId: user.id,
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
             tenantId: tenant.id,
-            roleId: ownerRole.id,
-          },
-        });
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          tenantId: tenant.id,
-          tenantName: tenant.name,
-          tenantSlug: tenant.slug,
-          roles: [ownerRole.code],
-          permissions: [...ROLE_DEFINITIONS[0].permissions],
-        } satisfies AuthIdentity;
-      });
+            tenantName: tenant.name,
+            tenantSlug: tenant.slug,
+            roles: [ownerRole.code],
+            permissions: [...ROLE_DEFINITIONS[0].permissions],
+          } satisfies AuthIdentity;
+        },
+        { timeout: 20000, maxWait: 5000 } // Increased timeout for this complex operation
+      );
 
       return this.createSession(identity);
     } catch (error) {
