@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Inject, Req } from "@nestjs/common";
+import { Controller, Get, Post, Body, UseGuards, Req } from "@nestjs/common";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { BillingService } from "./billing.service";
 
@@ -8,16 +8,18 @@ export class BillingController {
   constructor(private readonly billing: BillingService) {}
 
   @Get("status")
-  async status(@Req() req: any) {
-    const tenantId = req.user?.tenant?.id;
+  async status(@Req() req: unknown) {
+    const user = (req as { user?: unknown }).user as Record<string, unknown> | undefined;
+    const tenantId = (user?.tenant as { id?: string } | undefined)?.id;
     if (!tenantId) return { error: "Tenant tidak ditemukan" };
     return this.billing.checkStatus(tenantId);
   }
 
   @Post("charge")
-  async charge(@Req() req: any, @Body() body: { planCode: string; email?: string }) {
-    const tenantId = req.user?.tenant?.id;
-    const tenant = req.user?.tenant;
+  async charge(@Req() req: unknown, @Body() body: { planCode: string; email?: string }) {
+    const user = (req as { user?: unknown }).user as Record<string, unknown> | undefined;
+    const tenantId = (user?.tenant as { id?: string } | undefined)?.id;
+    const tenant = user?.tenant as { slug: string; name: string } | undefined;
     if (!tenantId || !tenant) return { error: "Tenant tidak ditemukan" };
     if (!body.planCode) return { error: "planCode wajib" };
 

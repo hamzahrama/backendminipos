@@ -1,20 +1,21 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { BillingService } from "../src/billing/billing.service";
-import { OfflineService } from "../src/offline/offline.service";
+import { describe, it, expect, beforeEach } from "vitest";
+import { BillingService } from "./billing/billing.service";
+import { OfflineService } from "./offline/offline.service";
 
 describe("Day 25 - Billing Service", () => {
   let billingService: BillingService;
 
   beforeEach(() => {
     billingService = new BillingService(
-      {} as any, // mock PrismaService
-      {} as any  // mock MidtransService
+      {} as Record<string, unknown>, // mock PrismaService
+      {} as Record<string, unknown>, // mock MidtransService
     );
   });
 
   it("should return current plan for tenant", async () => {
     // Mock prisma findUnique
-    const mockSubscription = {
+    // Mock data not used in this test
+    const _mockSubscription = {
       id: "sub-123",
       tenantId: "tenant-1",
       planCode: "PRO",
@@ -27,6 +28,7 @@ describe("Day 25 - Billing Service", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
+    void _mockSubscription;
 
     // Since we can't easily mock, just verify method exists
     expect(billingService.getCurrentPlan).toBeDefined();
@@ -50,7 +52,7 @@ describe("Day 28 - Offline Service", () => {
   let offlineService: OfflineService;
 
   beforeEach(() => {
-    offlineService = new OfflineService({} as any); // mock PrismaService
+    offlineService = new OfflineService({} as Record<string, unknown>); // mock PrismaService
   });
 
   it("should build offline snapshot with products", async () => {

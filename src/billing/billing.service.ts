@@ -46,7 +46,8 @@ export class BillingService {
     };
   }
 
-  async initializeSubscription(tenantId: string, tenant: { slug: string }) {
+  async initializeSubscription(tenantId: string, _tenant?: { slug: string }) {
+    void _tenant;
     const now = new Date();
     const nextMonth = new Date(now);
     nextMonth.setMonth(nextMonth.getMonth() + 1);
@@ -69,12 +70,12 @@ export class BillingService {
     }
 
     const ym = new Date().toISOString().slice(0, 7).replace("-", "");
-    const counter = await this.prisma.$executeRawUnsafe(`
-      SELECT seq FROM invoice_counters
+    const counter = await this.prisma.$queryRawUnsafe<{ seq?: number }[]>(
+      `SELECT seq FROM invoice_counters
       WHERE tenant_id = '${tenantId}' AND type = 'subscription'
-      LIMIT 1
-    `);
-    const seq = (counter?.[0]?.seq ?? 0) + 1;
+      LIMIT 1`
+    );
+    const seq = ((counter?.[0]?.seq ?? 0) + 1);
     const invoiceNumber = buildSubscriptionInvoice(tenant.slug, ym, seq);
 
     const orderId = `${invoiceNumber}-${Date.now()}`;
@@ -115,7 +116,6 @@ export class BillingService {
     if (!orderId) return false;
 
     const transactionStatus = payload.transaction_status as string;
-    const grossAmount = payload.gross_amount as number;
 
     // Find subscription by order ID
     const sub = await this.prisma.subscription.findFirst({

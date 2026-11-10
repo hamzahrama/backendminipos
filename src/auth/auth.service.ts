@@ -84,18 +84,17 @@ export class AuthService {
     const passwordHash = await hash(dto.password, 12);
 
     try {
-      const permissionIds: Map<string, string> = new Map();
-      for (const permission of PERMISSIONS) {
-        const permissionRecord = await this.prisma.permission.upsert({
-          where: { code: permission.code },
-          update: {},
-          create: permission,
-        });
-        permissionIds.set(permission.code, permissionRecord.id);
-      }
-
       const identity = await this.prisma.$transaction(
         async (tx) => {
+          const permissionIds: Map<string, string> = new Map();
+          for (const permission of PERMISSIONS) {
+            const permissionRecord = await (tx as any).permission.upsert({
+              where: { code: permission.code },
+              update: {},
+              create: permission,
+            });
+            permissionIds.set(permission.code, permissionRecord.id);
+          }
           const tenant = await tx.tenant.create({
             data: {
               name: dto.tenantName.trim(),
