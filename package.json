@@ -4,16 +4,10 @@
   "private": true,
   "scripts": {
     "build": "prisma generate --schema prisma/schema.prisma && nest build",
+    "postinstall": "prisma generate --schema prisma/schema.prisma",
     "start": "node dist/main",
-    "start:dev": "nest start --watch",
-    "lint": "eslint \"src/**/*.ts\"",
-    "test": "vitest run --passWithNoTests",
-    "test:coverage": "vitest run --coverage",
     "db:generate": "prisma generate --schema prisma/schema.prisma",
-    "db:migrate": "prisma migrate dev --schema prisma/schema.prisma",
-    "db:deploy": "prisma generate --schema prisma/schema.prisma && prisma migrate deploy --schema prisma/schema.prisma",
-    "db:studio": "prisma studio",
-    "dev": "nest start --watch"
+    "db:migrate": "prisma generate --schema prisma/schema.prisma && prisma migrate deploy --schema prisma/schema.prisma"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1146.0",
